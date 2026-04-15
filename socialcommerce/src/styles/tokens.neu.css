@@ -1,0 +1,230 @@
+:root {
+  color-scheme: dark;
+
+  /* --- Brand colors --- */
+  --color-brand-primary: #5865f2;
+  --color-brand-primary-hover: #4752c4;
+  --color-brand-secondary: #eb459e;
+
+  /* --- Surface colors --- */
+  --color-surface-0: #2b2d31;
+  /* unified neu base — all surfaces share this */
+  --color-surface-1: #2b2d31;
+  /* main bg */
+  --color-surface-2: #2b2d31;
+  /* elevated panels — use neu-raised shadow instead */
+  --color-surface-3: #2b2d31;
+  /* card bg — use neu-raised shadow instead */
+
+  /* --- Breakpoints (min-width reference values — see layout @media blocks) --- */
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+
+  /* --- Nav rail --- */
+  --nav-rail-width: 0px;
+  /* xs: hidden — overridden at sm+ */
+  --color-nav-bg: #2b2d31;
+  --color-nav-icon: #b5bac1;
+  --color-nav-icon-active: #ffffff;
+  --color-nav-indicator: #5865f2;
+
+  /* --- Top bar --- */
+  --topbar-height: 48px;
+  --color-topbar-bg: #2b2d31;
+  --color-topbar-border: transparent;
+
+  /* --- Layout size tokens (xs, mobile-first defaults) --- */
+  --layout-sidebar-width: 0px;
+  /* domain inner sidebars: hidden on xs */
+  --layout-panel-width: 100vw;
+  /* slide-over panels: full-screen on xs */
+  --layout-chat-panel-width: 0px;
+  /* inline chat panels: hidden on xs */
+  --layout-content-max-width: 100%;
+  /* centered content: full width on xs */
+  --layout-card-min-width: 240px;
+  /* grid card minimum width on xs */
+  --layout-tab-bar-height: 56px;
+  /* bottom tab bar: visible on xs/sm, 0 at md+ */
+
+  /* --- Text --- */
+  --color-text-primary: #f2f3f5;
+  --color-text-secondary: #b5bac1;
+  --color-text-muted: #6d6f78;
+  --color-text-link: #00aff4;
+
+  /* --- Status colors --- */
+  --color-success: #23a559;
+  --color-warning: #f0b232;
+  --color-danger: #da373c;
+  --color-info: #5865f2;
+
+  /* --- Spacing scale (4-point) --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* --- Typography --- */
+  --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.2;
+  --line-height-base: 1.5;
+
+  /* --- Radius --- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* --- Shadows --- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+
+  /* --- Neomorphism --- */
+  /* All neomorphic elements share --neu-bg with their parent */
+  --neu-bg: #2b2d31;
+  --neu-light: rgba(255, 255, 255, 0.06);
+  --neu-dark: rgba(0, 0, 0, 0.55);
+  /* Raised (convex) — cards, buttons, icons */
+  --neu-raised: 6px 6px 14px var(--neu-dark), -6px -6px 14px var(--neu-light);
+  --neu-raised-sm: 3px 3px 7px var(--neu-dark), -3px -3px 7px var(--neu-light);
+  --neu-raised-xs: 2px 2px 4px var(--neu-dark), -2px -2px 4px var(--neu-light);
+  /* Inset (concave) — active states, input wells, filter containers */
+  --neu-inset: inset 4px 4px 9px var(--neu-dark), inset -4px -4px 9px var(--neu-light);
+  --neu-inset-sm: inset 2px 2px 5px var(--neu-dark), inset -2px -2px 5px var(--neu-light);
+
+  /* --- Transitions --- */
+  --transition-fast: 100ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* --- Z-index scale --- */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-modal-backdrop: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+  --z-tooltip: 500;
+}
+
+/* ── Light theme overrides ─────────────────────────────────── */
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* --- Surface colors --- */
+  --color-surface-0: #e8eaed;
+  --color-surface-1: #e8eaed;
+  --color-surface-2: #e8eaed;
+  --color-surface-3: #e8eaed;
+
+  /* --- Nav rail --- */
+  --color-nav-bg: #e8eaed;
+  --color-nav-icon: #4e5058;
+  --color-nav-icon-active: #ffffff;
+
+  /* --- Top bar --- */
+  --color-topbar-bg: #e8eaed;
+  --color-topbar-border: transparent;
+
+  /* --- Text --- */
+  --color-text-primary: #060607;
+  --color-text-secondary: #4e5058;
+  --color-text-muted: #80848e;
+  --color-text-link: #0067e0;
+
+  /* --- Shadows --- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+  /* --- Neomorphism (light) --- */
+  --neu-bg: #e8eaed;
+  --neu-light: rgba(255, 255, 255, 0.75);
+  --neu-dark: rgba(0, 0, 0, 0.15);
+  --neu-raised: 6px 6px 14px var(--neu-dark), -6px -6px 14px var(--neu-light);
+  --neu-raised-sm: 3px 3px 7px var(--neu-dark), -3px -3px 7px var(--neu-light);
+  --neu-raised-xs: 2px 2px 4px var(--neu-dark), -2px -2px 4px var(--neu-light);
+  --neu-inset: inset 4px 4px 9px var(--neu-dark), inset -4px -4px 9px var(--neu-light);
+  --neu-inset-sm: inset 2px 2px 5px var(--neu-dark), inset -2px -2px 5px var(--neu-light);
+}
+
+/* ── Layout breakpoints — sm / md / lg / xl ────────────────── */
+@media (min-width: 480px) {
+  :root {
+    --nav-rail-width: 52px;
+    --layout-panel-width: 320px;
+    --layout-card-min-width: 260px;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --nav-rail-width: 60px;
+    --layout-sidebar-width: 200px;
+    --layout-panel-width: 340px;
+    --layout-chat-panel-width: 240px;
+    --layout-content-max-width: 680px;
+    --layout-card-min-width: 280px;
+    --layout-tab-bar-height: 0px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --nav-rail-width: 72px;
+    --layout-sidebar-width: 220px;
+    --layout-panel-width: 360px;
+    --layout-chat-panel-width: 280px;
+    --layout-content-max-width: 960px;
+    --layout-card-min-width: 280px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --nav-rail-width: 72px;
+    --layout-sidebar-width: 260px;
+    --layout-panel-width: 400px;
+    --layout-chat-panel-width: 320px;
+    --layout-content-max-width: 1200px;
+    --layout-card-min-width: 300px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  :root {
+    --transition-fast: 0ms;
+    --transition-base: 0ms;
+    --transition-slow: 0ms;
+  }
+}

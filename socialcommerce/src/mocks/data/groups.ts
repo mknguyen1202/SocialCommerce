@@ -1,0 +1,102 @@
+const ago = (days: number) => new Date(Date.now() - days * 864e5).toISOString();
+
+export const GROUPS = [
+    {
+        id: 'grp-1',
+        name: 'Dev Talk',
+        slug: 'dev-talk',
+        description: 'A community for developers to discuss tools, patterns, and best practices across the full stack.',
+        avatar_url: 'https://api.dicebear.com/7.x/identicon/svg?seed=devtalk',
+        banner_url: 'https://picsum.photos/seed/devtalk-banner/1200/300',
+        visibility: 'public',
+        member_count: 4821,
+        rules: [
+            { id: 'rule-1a', title: 'Be constructive', description: 'Criticism should be actionable and respectful.', order: 1 },
+            { id: 'rule-1b', title: 'No spam or self-promotion', description: 'Commercial posts will be removed.', order: 2 },
+            { id: 'rule-1c', title: 'Search before posting', description: 'If your question has been answered, link to the original.', order: 3 },
+        ],
+        user_role: 'member' as string | null,
+        created_at: ago(365),
+    },
+    {
+        id: 'grp-2',
+        name: 'Fitness Hub',
+        slug: 'fitness-hub',
+        description: 'Training logs, nutrition advice, gear reviews, and motivation for every level of athlete.',
+        avatar_url: 'https://api.dicebear.com/7.x/identicon/svg?seed=fitnesshub',
+        banner_url: 'https://picsum.photos/seed/fitness-banner/1200/300',
+        visibility: 'public',
+        member_count: 12340,
+        rules: [
+            { id: 'rule-2a', title: 'No unsolicited advice', description: 'Only share advice when asked or in dedicated threads.', order: 1 },
+            { id: 'rule-2b', title: 'Source your claims', description: 'Health/nutrition claims must cite a source.', order: 2 },
+        ],
+        user_role: 'member' as string | null,
+        created_at: ago(400),
+    },
+    {
+        id: 'grp-3',
+        name: 'Home Chefs',
+        slug: 'home-chefs',
+        description: 'Share recipes, techniques, and kitchen equipment tips. All skill levels welcome.',
+        avatar_url: 'https://api.dicebear.com/7.x/identicon/svg?seed=homechefs',
+        banner_url: 'https://picsum.photos/seed/chefs-banner/1200/300',
+        visibility: 'public',
+        member_count: 8907,
+        rules: [
+            { id: 'rule-3a', title: 'Include quantities in recipes', description: 'Recipes posted without measurements will be removed.', order: 1 },
+        ],
+        user_role: null as string | null,
+        created_at: ago(200),
+    },
+    {
+        id: 'grp-4',
+        name: 'Design Systems',
+        slug: 'design-systems',
+        description: 'Tokens, component libraries, accessibility patterns, and everything design-eng collaboration.',
+        avatar_url: 'https://api.dicebear.com/7.x/identicon/svg?seed=designsystems',
+        banner_url: 'https://picsum.photos/seed/design-banner/1200/300',
+        visibility: 'public',
+        member_count: 3102,
+        rules: [
+            { id: 'rule-4a', title: 'Show your work', description: 'Screenshots or code snippets required with all implementation posts.', order: 1 },
+            { id: 'rule-4b', title: 'Cite accessibility standards', description: 'WCAG references required when discussing a11y.', order: 2 },
+        ],
+        user_role: 'member' as string | null,
+        created_at: ago(180),
+    },
+    {
+        id: 'grp-5',
+        name: 'Indie Hackers',
+        slug: 'indie-hackers',
+        description: 'Building in public, MRR milestones, failed experiments, and founder war stories.',
+        avatar_url: 'https://api.dicebear.com/7.x/identicon/svg?seed=indiehackers',
+        banner_url: 'https://picsum.photos/seed/indie-banner/1200/300',
+        visibility: 'public',
+        member_count: 6548,
+        rules: [
+            { id: 'rule-5a', title: 'Real numbers only', description: 'Share actual metrics. Vague hype will be removed.', order: 1 },
+        ],
+        user_role: null as string | null,
+        created_at: ago(290),
+    },
+    {
+        id: 'grp-6',
+        name: 'Trail Running',
+        slug: 'trail-running',
+        description: 'Race reports, route planning, gear, and training for trail and ultra runners.',
+        avatar_url: 'https://api.dicebear.com/7.x/identicon/svg?seed=trailrunning',
+        banner_url: 'https://picsum.photos/seed/trail-banner/1200/300',
+        visibility: 'public',
+        member_count: 5230,
+        rules: [
+            { id: 'rule-6a', title: 'Include trail conditions', description: 'Race and route reports must mention current trail conditions.', order: 1 },
+        ],
+        user_role: 'member' as string | null,
+        created_at: ago(150),
+    },
+];
+
+export const GROUP_BY_SLUG: Record<string, typeof GROUPS[0]> = Object.fromEntries(
+    GROUPS.map((g) => [g.slug, g]),
+);

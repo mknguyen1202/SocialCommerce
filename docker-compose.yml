@@ -1,0 +1,240 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: pg
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: user_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  userservice:
+    build: ./services/UserService
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=user_db;Username=postgres;Password=1234;Include Error Detail=true;Ssl Mode=Disable"
+      Authentication__Jwt__Issuer: "SocialCommerce"
+      Authentication__Jwt__Audience: "sc-rt-hub"
+      Authentication__Jwt__SymmetricKey: "sc-dev-secret-key-min-32-bytes-long!!"
+      Authentication__Google__ClientId: "${GOOGLE_CLIENT_ID}"
+      Authentication__Google__ClientSecret: "${GOOGLE_CLIENT_SECRET}"
+      MediaService__BaseUrl: "http://mediaservice:8080"
+      Internal__ApiKey: "sc-dev-internal-api-key"
+    ports:
+      - "5001:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mediaservice:
+        condition: service_started
+
+  mediaservice:
+    build: ./services/MediaService
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=media_db;Username=postgres;Password=1234;Ssl Mode=Disable"
+      Authentication__Jwt__Issuer: "SocialCommerce"
+      Authentication__Jwt__SymmetricKey: "sc-dev-secret-key-min-32-bytes-long!!"
+      MediaService__LocalBaseUrl: "http://localhost:5006"
+    ports:
+      - "5006:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  realtimehub:
+    build: ./services/RealTimeHub
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      Authentication__Jwt__Issuer: "SocialCommerce"
+      Authentication__Jwt__SymmetricKey: "sc-dev-secret-key-min-32-bytes-long!!"
+      Redis__Connection: "redis:6379,abortConnect=false"
+      Internal__ApiKey: "sc-dev-internal-api-key"
+    ports:
+      - "5007:8080"
+    depends_on:
+      - redis
+
+  socialgraphservice:
+    build:
+      context: .
+      dockerfile: services/SocialGraphService/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=social_graph;Username=postgres;Password=1234;Ssl Mode=Disable"
+    ports:
+      - "5002:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  socialcontentservice:
+    build:
+      context: .
+      dockerfile: services/SocialContentService/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=social_content;Username=postgres;Password=1234;Ssl Mode=Disable"
+      ServiceBus__Connection: ""
+    ports:
+      - "5003:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  feedservice:
+    build:
+      context: .
+      dockerfile: services/FeedService/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=feed;Username=postgres;Password=1234;Ssl Mode=Disable"
+      Redis__Connection: "redis:6379,abortConnect=false"
+      GraphService__BaseUrl: "http://socialgraphservice:8080"
+      ContentService__BaseUrl: "http://socialcontentservice:8080"
+    ports:
+      - "5004:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      socialgraphservice:
+        condition: service_started
+
+  moderationservice:
+    build:
+      context: .
+      dockerfile: services/ModerationService/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=moderation_db;Username=postgres;Password=1234;Ssl Mode=Disable"
+    ports:
+      - "5005:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  communicationservice:
+    build: ./services/CommunicationService
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=communication_db;Username=postgres;Password=1234;Ssl Mode=Disable"
+      Authentication__Jwt__Issuer: "SocialCommerce"
+      Authentication__Jwt__SymmetricKey: "sc-dev-secret-key-min-32-bytes-long!!"
+      RealTimeHub__BaseUrl: "http://realtimehub:8080"
+      Internal__ApiKey: "sc-dev-internal-api-key"
+    ports:
+      - "5008:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      realtimehub:
+        condition: service_started
+
+  presenceservice:
+    build: ./services/PresenceService
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      Authentication__Jwt__Issuer: "SocialCommerce"
+      Authentication__Jwt__SymmetricKey: "sc-dev-secret-key-min-32-bytes-long!!"
+      Redis__Connection: "redis:6379,abortConnect=false"
+      RealTimeHub__BaseUrl: "http://realtimehub:8080"
+      Internal__ApiKey: "sc-dev-internal-api-key"
+    ports:
+      - "5009:8080"
+    depends_on:
+      - redis
+      - realtimehub
+
+  signalingservice:
+    build: ./services/SignalingService
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=signaling_db;Username=postgres;Password=1234;Ssl Mode=Disable"
+      Authentication__Jwt__Issuer: "SocialCommerce"
+      Authentication__Jwt__SymmetricKey: "sc-dev-secret-key-min-32-bytes-long!!"
+      RealTimeHub__BaseUrl: "http://realtimehub:8080"
+      Internal__ApiKey: "sc-dev-internal-api-key"
+    ports:
+      - "5010:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      realtimehub:
+        condition: service_started
+
+  inventoryservice:
+    build: ./services/InventoryService
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=inventory_db;Username=postgres;Password=1234;Include Error Detail=true;Ssl Mode=Disable"
+      Authentication__Jwt__Issuer: "SocialCommerce"
+      Authentication__Jwt__SymmetricKey: "sc-dev-secret-key-min-32-bytes-long!!"
+    ports:
+      - "5014:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  analyticsservice:
+    build: ./services/AnalyticsService
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=analytics_db;Username=postgres;Password=1234;Include Error Detail=true;Ssl Mode=Disable"
+      Authentication__Jwt__Issuer: "SocialCommerce"
+      Authentication__Jwt__SymmetricKey: "sc-dev-secret-key-min-32-bytes-long!!"
+      Redis__Connection: "redis:6379,abortConnect=false"
+    ports:
+      - "5015:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  adservice:
+    build: ./services/AdService
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=ad_db;Username=postgres;Password=1234;Include Error Detail=true;Ssl Mode=Disable"
+      Authentication__Jwt__Issuer: "SocialCommerce"
+      Authentication__Jwt__SymmetricKey: "sc-dev-secret-key-min-32-bytes-long!!"
+    ports:
+      - "5016:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+
