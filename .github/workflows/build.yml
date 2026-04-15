@@ -107,7 +107,7 @@ jobs:
           skip_app_build: true   # built above
 
   deploy-aca:
-    name: Deploy to Azure Container Apps (Phase 1)
+    name: Deploy to Azure Container Apps
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'push'
@@ -123,41 +123,9 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy userservice
-        uses: azure/container-apps-deploy-action@v2
-        with:
-          resourceGroup: rg-socialcommerce
-          containerAppEnvironment: acaenv-socialcommerce
-          containerAppName: userservice
-          imageToDeploy: ${{ env.DOCKER_HUB_USERNAME }}/sc-userservice:${{ github.sha }}
-          targetPort: 8080
-          ingress: external
-          environmentVariables: >-
-            ASPNETCORE_ENVIRONMENT=Production
-            Authentication__Jwt__Issuer=SocialCommerce
-            Authentication__Jwt__Audience=sc-rt-hub
-
-      - name: Deploy socialgraphservice
-        uses: azure/container-apps-deploy-action@v2
-        with:
-          resourceGroup: rg-socialcommerce
-          containerAppEnvironment: acaenv-socialcommerce
-          containerAppName: socialgraphservice
-          imageToDeploy: ${{ env.DOCKER_HUB_USERNAME }}/sc-socialgraphservice:${{ github.sha }}
-          targetPort: 8080
-          ingress: internal
-          environmentVariables: >-
-            ASPNETCORE_ENVIRONMENT=Production
-
-      - name: Deploy realtimehub
-        uses: azure/container-apps-deploy-action@v2
-        with:
-          resourceGroup: rg-socialcommerce
-          containerAppEnvironment: acaenv-socialcommerce
-          containerAppName: realtimehub
-          imageToDeploy: ${{ env.DOCKER_HUB_USERNAME }}/sc-realtimehub:${{ github.sha }}
-          targetPort: 8080
-          ingress: external
-          environmentVariables: >-
-            ASPNETCORE_ENVIRONMENT=Production
-            Authentication__Jwt__Issuer=SocialCommerce
+      - name: Deploy all services
+        shell: pwsh
+        run: >
+          ./scripts/deploy-aca.ps1
+          -ImageTag "${{ github.sha }}"
+          -DockerUser "${{ secrets.DOCKER_HUB_USERNAME }}"
