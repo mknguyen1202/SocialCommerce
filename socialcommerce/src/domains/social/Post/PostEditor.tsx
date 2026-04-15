@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Modal } from '../../../shared/components/Modal';
 import { Button } from '../../../shared/components/Button';
 import { useCreatePost } from '../hooks/usePost';
@@ -23,6 +24,7 @@ export const PostEditor: React.FC<PostEditorProps> = ({ isOpen, onClose, groupSl
   const [body, setBody] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const createPost = useCreatePost();
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
@@ -37,6 +39,7 @@ export const PostEditor: React.FC<PostEditorProps> = ({ isOpen, onClose, groupSl
     setBody('');
     setLinkUrl('');
     onClose();
+    navigate('/social');
   };
 
   const inputStyle: React.CSSProperties = {
@@ -53,7 +56,7 @@ export const PostEditor: React.FC<PostEditorProps> = ({ isOpen, onClose, groupSl
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={groupSlug ? `Post in g/${groupSlug}` : 'Create Post'}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', minWidth: 480 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', width: '100%', boxSizing: 'border-box' }}>
         {/* Type tabs */}
         <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
           {POST_TYPES.map((t) => (

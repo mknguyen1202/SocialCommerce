@@ -2,12 +2,14 @@ using Azure.Messaging.ServiceBus;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Instrumentation.EntityFrameworkCore;
 using SocialContentService.Data;
 using SocialContentService.Services;
+using System.Text;
 
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -25,19 +27,33 @@ builder.Services.AddDbContext<AppDb>(options =>
 builder.Services.AddHealthChecks().AddNpgSql(cs);
 
 
-// AuthN/AuthZ
+// AuthN/AuthZ — validate symmetric-key JWTs issued by the BFF gateway (UserService)
+string jwtKey = builder.Configuration["Authentication:Jwt:SymmetricKey"] ?? "";
+string jwtIssuer = builder.Configuration["Authentication:Jwt:Issuer"] ?? "SocialCommerce";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(o =>
 {
-    o.Authority = builder.Configuration["Jwt:Authority"];
-    o.Audience = builder.Configuration["Jwt:Audience"];
+    if (!string.IsNullOrWhiteSpace(jwtKey))
+    {
+        byte[] keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = false,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    }
 });
 
 
 builder.Services.AddAuthorization(opts =>
 {
-    opts.AddPolicy("social.read", p => p.RequireClaim("scp", "social.read").RequireAuthenticatedUser());
-    opts.AddPolicy("social.write", p => p.RequireClaim("scp", "social.write").RequireAuthenticatedUser());
+    opts.AddPolicy("social.read", p => p.RequireAuthenticatedUser());
+    opts.AddPolicy("social.write", p => p.RequireAuthenticatedUser());
 });
 
 

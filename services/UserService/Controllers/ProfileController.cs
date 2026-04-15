@@ -168,6 +168,7 @@ namespace UserService.Controllers
         }
 
         [HttpGet("{userId:guid}")]
+        [HttpGet("/api/users/{userId:guid}/profile")]
         public async Task<ActionResult<PublicProfileReadDto>> GetPublic(Guid userId)
         {
             UserProfile? profile = await _db.UserProfiles.AsNoTracking()

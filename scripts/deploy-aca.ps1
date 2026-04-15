@@ -14,19 +14,33 @@ $ErrorActionPreference = "Stop"
 $RG      = "rg-socialcommerce"
 $ACA_ENV = "acaenv-socialcommerce"
 $KV      = "kv-socialcommerce"
-$PG_FQDN = "pgflex-socialcommerce.postgres.database.azure.com"
 
 # ---------------------------------------------------------------------------
 # Fetch secrets from Key Vault (keeps secrets out of workflow YAML and logs)
+# Secret names match what is actually stored in kv-socialcommerce.
 # ---------------------------------------------------------------------------
 Write-Host "Fetching secrets from Key Vault '$KV'..."
-$PG_PASS      = az keyvault secret show --vault-name $KV --name "PgAdminPassword"   --query value -o tsv
-$JWT_KEY      = az keyvault secret show --vault-name $KV --name "JwtSymmetricKey"   --query value -o tsv
-$INTERNAL_KEY = az keyvault secret show --vault-name $KV --name "InternalApiKey"    --query value -o tsv
-$STORAGE_CS   = az keyvault secret show --vault-name $KV --name "StorageConnection" --query value -o tsv
-$REDIS_URL    = az keyvault secret show --vault-name $KV --name "UpstashRedisUrl"   --query value -o tsv
+$JWT_KEY      = az keyvault secret show --vault-name $KV --name "Jwt--SymmetricKey"              --query value -o tsv
+$INTERNAL_KEY = az keyvault secret show --vault-name $KV --name "Internal--ApiKey"               --query value -o tsv
+$STORAGE_CS   = az keyvault secret show --vault-name $KV --name "ConnectionStrings--BlobStorage" --query value -o tsv
+$GOOGLE_ID    = az keyvault secret show --vault-name $KV --name "Google--ClientId"               --query value -o tsv
+$GOOGLE_SEC   = az keyvault secret show --vault-name $KV --name "Google--ClientSecret"           --query value -o tsv
+# Redis: add a 'Redis--Connection' secret to kv-socialcommerce with the Upstash URL when available.
+# Until then, services fall back to a safe no-op local Redis (abortConnect=false prevents crashes).
+$REDIS_URL    = (az keyvault secret show --vault-name $KV --name "Redis--Connection" --query value -o tsv 2>$null) ?? "localhost:6379,abortConnect=false"
 
-$PG_BASE = "Host=${PG_FQDN};Port=5432;Username=scadmin;Password=${PG_PASS};Ssl Mode=Require"
+# Per-service PostgreSQL connection strings (fully formed, include DB name)
+$CS_USER      = az keyvault secret show --vault-name $KV --name "ConnStr-UserDb"         --query value -o tsv
+$CS_CONTENT   = az keyvault secret show --vault-name $KV --name "ConnStr-SocialContent"  --query value -o tsv
+$CS_GRAPH     = az keyvault secret show --vault-name $KV --name "ConnStr-SocialGraph"    --query value -o tsv
+$CS_FEED      = az keyvault secret show --vault-name $KV --name "ConnStr-Feed"           --query value -o tsv
+$CS_ANALYTICS = az keyvault secret show --vault-name $KV --name "ConnStr-AnalyticsDb"   --query value -o tsv
+$CS_AD        = az keyvault secret show --vault-name $KV --name "ConnStr-AdDb"           --query value -o tsv
+$CS_COMM      = az keyvault secret show --vault-name $KV --name "ConnStr-CommunicationDb" --query value -o tsv
+$CS_INVENTORY = az keyvault secret show --vault-name $KV --name "ConnStr-InventoryDb"    --query value -o tsv
+$CS_MEDIA     = az keyvault secret show --vault-name $KV --name "ConnStr-MediaDb"        --query value -o tsv
+$CS_MOD       = az keyvault secret show --vault-name $KV --name "ConnStr-ModerationDb"   --query value -o tsv
+$CS_SIGNAL    = az keyvault secret show --vault-name $KV --name "ConnStr-SignalingDb"    --query value -o tsv
 
 # ---------------------------------------------------------------------------
 # Helper: create or update a container app
@@ -76,7 +90,7 @@ Write-Host "`n===== Phase 1: leaf services ====="
 Upsert-App -Name "mediaservice" -Image (img "mediaservice") -Ingress "external" -Env @(
     "ASPNETCORE_URLS=http://+:8080"
     "ASPNETCORE_ENVIRONMENT=Development"
-    "ConnectionStrings__Default=${PG_BASE};Database=media_db"
+    "ConnectionStrings__Default=${CS_MEDIA}"
     "Authentication__Jwt__Issuer=SocialCommerce"
     "Authentication__Jwt__SymmetricKey=${JWT_KEY}"
     "AzureStorage__ConnectionString=${STORAGE_CS}"
@@ -96,25 +110,27 @@ Upsert-App -Name "realtimehub" -Image (img "realtimehub") -Ingress "external" -E
 Upsert-App -Name "socialgraphservice" -Image (img "socialgraphservice") -Env @(
     "ASPNETCORE_URLS=http://+:8080"
     "ASPNETCORE_ENVIRONMENT=Development"
-    "ConnectionStrings__Default=${PG_BASE};Database=social_graph"
+    "ConnectionStrings__Default=${CS_GRAPH}"
 )
 
 Upsert-App -Name "socialcontentservice" -Image (img "socialcontentservice") -Env @(
     "ASPNETCORE_URLS=http://+:8080"
     "ASPNETCORE_ENVIRONMENT=Development"
-    "ConnectionStrings__Default=${PG_BASE};Database=social_content"
+    "ConnectionStrings__Default=${CS_CONTENT}"
+    "Authentication__Jwt__Issuer=SocialCommerce"
+    "Authentication__Jwt__SymmetricKey=${JWT_KEY}"
 )
 
 Upsert-App -Name "moderationservice" -Image (img "moderationservice") -Env @(
     "ASPNETCORE_URLS=http://+:8080"
     "ASPNETCORE_ENVIRONMENT=Development"
-    "ConnectionStrings__Default=${PG_BASE};Database=moderation_db"
+    "ConnectionStrings__Default=${CS_MOD}"
 )
 
 Upsert-App -Name "inventoryservice" -Image (img "inventoryservice") -Env @(
     "ASPNETCORE_URLS=http://+:8080"
     "ASPNETCORE_ENVIRONMENT=Development"
-    "ConnectionStrings__Default=${PG_BASE};Database=inventory_db"
+    "ConnectionStrings__Default=${CS_INVENTORY}"
     "Authentication__Jwt__Issuer=SocialCommerce"
     "Authentication__Jwt__SymmetricKey=${JWT_KEY}"
 )
@@ -122,7 +138,7 @@ Upsert-App -Name "inventoryservice" -Image (img "inventoryservice") -Env @(
 Upsert-App -Name "analyticsservice" -Image (img "analyticsservice") -Env @(
     "ASPNETCORE_URLS=http://+:8080"
     "ASPNETCORE_ENVIRONMENT=Development"
-    "ConnectionStrings__Default=${PG_BASE};Database=analytics_db"
+    "ConnectionStrings__Default=${CS_ANALYTICS}"
     "Authentication__Jwt__Issuer=SocialCommerce"
     "Authentication__Jwt__SymmetricKey=${JWT_KEY}"
     "Redis__Connection=${REDIS_URL}"
@@ -131,7 +147,7 @@ Upsert-App -Name "analyticsservice" -Image (img "analyticsservice") -Env @(
 Upsert-App -Name "adservice" -Image (img "adservice") -Env @(
     "ASPNETCORE_URLS=http://+:8080"
     "ASPNETCORE_ENVIRONMENT=Development"
-    "ConnectionStrings__Default=${PG_BASE};Database=ad_db"
+    "ConnectionStrings__Default=${CS_AD}"
     "Authentication__Jwt__Issuer=SocialCommerce"
     "Authentication__Jwt__SymmetricKey=${JWT_KEY}"
 )
@@ -145,18 +161,24 @@ Write-Host "`n===== Phase 2: services with intra-cluster calls ====="
 Upsert-App -Name "userservice" -Image (img "userservice") -Ingress "external" -Env @(
     "ASPNETCORE_URLS=http://+:8080"
     "ASPNETCORE_ENVIRONMENT=Development"
-    "ConnectionStrings__Default=${PG_BASE};Database=user_db"
+    "ConnectionStrings__Default=${CS_USER}"
     "Authentication__Jwt__Issuer=SocialCommerce"
     "Authentication__Jwt__Audience=sc-rt-hub"
     "Authentication__Jwt__SymmetricKey=${JWT_KEY}"
+    "Authentication__Google__ClientId=${GOOGLE_ID}"
+    "Authentication__Google__ClientSecret=${GOOGLE_SEC}"
     "MediaService__BaseUrl=http://mediaservice"
     "Internal__ApiKey=${INTERNAL_KEY}"
+    "Cors__Origins=https://blue-sky-00ad0c90f.7.azurestaticapps.net,https://localhost:5173"
+    "ReverseProxy__Clusters__socialcontent__Destinations__default__Address=http://socialcontentservice"
+    "ReverseProxy__Clusters__feed__Destinations__default__Address=http://feedservice"
+    "ReverseProxy__Clusters__communication__Destinations__default__Address=http://communicationservice"
 )
 
 Upsert-App -Name "feedservice" -Image (img "feedservice") -Env @(
     "ASPNETCORE_URLS=http://+:8080"
     "ASPNETCORE_ENVIRONMENT=Development"
-    "ConnectionStrings__Default=${PG_BASE};Database=feed"
+    "ConnectionStrings__Default=${CS_FEED}"
     "Redis__Connection=${REDIS_URL}"
     "GraphService__BaseUrl=http://socialgraphservice"
     "ContentService__BaseUrl=http://socialcontentservice"
@@ -165,7 +187,7 @@ Upsert-App -Name "feedservice" -Image (img "feedservice") -Env @(
 Upsert-App -Name "communicationservice" -Image (img "communicationservice") -Env @(
     "ASPNETCORE_URLS=http://+:8080"
     "ASPNETCORE_ENVIRONMENT=Development"
-    "ConnectionStrings__Default=${PG_BASE};Database=communication_db"
+    "ConnectionStrings__Default=${CS_COMM}"
     "Authentication__Jwt__Issuer=SocialCommerce"
     "Authentication__Jwt__SymmetricKey=${JWT_KEY}"
     "RealTimeHub__BaseUrl=http://realtimehub"
@@ -177,7 +199,7 @@ Upsert-App -Name "presenceservice" -Image (img "presenceservice") -Env @(
     "ASPNETCORE_ENVIRONMENT=Development"
     "Authentication__Jwt__Issuer=SocialCommerce"
     "Authentication__Jwt__SymmetricKey=${JWT_KEY}"
-    "Redis__Connection=${REDIS_URL}"
+    "ConnectionStrings__Redis=${REDIS_URL}"
     "RealTimeHub__BaseUrl=http://realtimehub"
     "Internal__ApiKey=${INTERNAL_KEY}"
 )
@@ -185,7 +207,7 @@ Upsert-App -Name "presenceservice" -Image (img "presenceservice") -Env @(
 Upsert-App -Name "signalingservice" -Image (img "signalingservice") -Env @(
     "ASPNETCORE_URLS=http://+:8080"
     "ASPNETCORE_ENVIRONMENT=Development"
-    "ConnectionStrings__Default=${PG_BASE};Database=signaling_db"
+    "ConnectionStrings__Default=${CS_SIGNAL}"
     "Authentication__Jwt__Issuer=SocialCommerce"
     "Authentication__Jwt__SymmetricKey=${JWT_KEY}"
     "RealTimeHub__BaseUrl=http://realtimehub"

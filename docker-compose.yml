@@ -35,12 +35,19 @@ services:
       Authentication__Google__ClientSecret: "${GOOGLE_CLIENT_SECRET}"
       MediaService__BaseUrl: "http://mediaservice:8080"
       Internal__ApiKey: "sc-dev-internal-api-key"
+      ReverseProxy__Clusters__socialcontent__Destinations__default__Address: "http://socialcontentservice:8080"
+      ReverseProxy__Clusters__feed__Destinations__default__Address: "http://feedservice:8080"
+      ReverseProxy__Clusters__communication__Destinations__default__Address: "http://communicationservice:8080"
     ports:
       - "5001:8080"
     depends_on:
       postgres:
         condition: service_healthy
       mediaservice:
+        condition: service_started
+      socialcontentservice:
+        condition: service_started
+      feedservice:
         condition: service_started
 
   mediaservice:
@@ -95,6 +102,8 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Default: "Host=postgres;Port=5432;Database=social_content;Username=postgres;Password=1234;Ssl Mode=Disable"
       ServiceBus__Connection: ""
+      Authentication__Jwt__Issuer: "SocialCommerce"
+      Authentication__Jwt__SymmetricKey: "sc-dev-secret-key-min-32-bytes-long!!"
     ports:
       - "5003:8080"
     depends_on:

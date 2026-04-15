@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Net.Http.Headers;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Yarp.ReverseProxy.Transforms;
 
 using UserService.Data;
 using UserService.Services;
@@ -33,8 +36,10 @@ builder.Services.AddControllers()
     });
 
 // ----------------- CORS (only if SPA is on a different origin) -----------------
+string[] corsOrigins = (builder.Configuration["Cors:Origins"] ?? "https://localhost:5173")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 builder.Services.AddCors(o => o.AddPolicy("spa", p =>
-    p.WithOrigins("https://localhost:5173")
+    p.WithOrigins(corsOrigins)
      .AllowAnyHeader()
      .AllowAnyMethod()
      .AllowCredentials()));
@@ -83,6 +88,27 @@ builder.Services.AddHttpClient<IMediaServiceClient, MediaServiceHttpClient>(c =>
 {
     c.BaseAddress = new Uri(builder.Configuration["MediaService:BaseUrl"] ?? "http://localhost:5006");
 });
+
+// ----------------- YARP reverse proxy (BFF gateway) -----------------
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddTransforms(context =>
+    {
+        context.AddRequestTransform(transformContext =>
+        {
+            ClaimsPrincipal user = transformContext.HttpContext.User;
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                ITokenService tokenService = transformContext.HttpContext.RequestServices
+                    .GetRequiredService<ITokenService>();
+                List<Claim> claims = new List<Claim>(user.Claims);
+                string token = tokenService.CreateToken(claims);
+                transformContext.ProxyRequest.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", token);
+            }
+            return ValueTask.CompletedTask;
+        });
+    });
 
 // ----------------- Swagger -----------------
 builder.Services.AddEndpointsApiExplorer();
@@ -135,5 +161,6 @@ app.UseAuthorization();
 
 app.MapAuthEndpoints();        // /auth/login/{provider}, /auth/callback/{provider}/signin, /auth/me, /auth/logout
 app.MapControllers();
+app.MapReverseProxy();         // YARP: proxy /api/posts, /api/feed, etc. to internal services
 
 app.Run();

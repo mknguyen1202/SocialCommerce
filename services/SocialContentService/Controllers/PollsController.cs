@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace SocialContentService.Controllers
 {
     [ApiController]
-    [Route("api/social/polls")]
+    [Route("api/polls")]
     public class PollsController : ControllerBase
     {
         private readonly AppDb _db;

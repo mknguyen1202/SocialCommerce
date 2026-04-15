@@ -9,7 +9,7 @@ using System.Security.Claims;
 namespace SocialContentService.Controllers
 {
     [ApiController]
-    [Route("api/social/posts/{postId:guid}/comments")]
+    [Route("api/posts/{postId:guid}/comments")]
     public class CommentsController : ControllerBase
     {
         private readonly AppDb _db; private readonly IBusPublisher _bus;

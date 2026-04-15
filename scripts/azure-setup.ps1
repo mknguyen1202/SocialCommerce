@@ -50,6 +50,16 @@ GitHub Secrets:
 # az keyvault secret set --vault-name $KV_NAME --name "Google--ClientId"     --value "<real>"
 # az keyvault secret set --vault-name $KV_NAME --name "Google--ClientSecret" --value "<real>"
 
+# --- Seed Key Vault secrets (run once before first deploy) ---
+# Retrieve the storage account connection string then paste it below.
+#   az storage account show-connection-string --name stsocialcommerce --resource-group rg-socialcommerce -o tsv
+#
+# az keyvault secret set --vault-name $KV_NAME --name "PgAdminPassword"   --value "pgadmin_test_password"
+# az keyvault secret set --vault-name $KV_NAME --name "JwtSymmetricKey"   --value "sc-dev-secret-key-min-32-bytes-long!!"
+# az keyvault secret set --vault-name $KV_NAME --name "InternalApiKey"    --value "sc-dev-internal-api-key"
+# az keyvault secret set --vault-name $KV_NAME --name "StorageConnection" --value "<connection-string from above>"
+# az keyvault secret set --vault-name $KV_NAME --name "UpstashRedisUrl"   --value "<upstash-redis-connection-string>"
+
 # --- Budget alert (do this in the portal — CLI version is preview/broken) ---
 # Portal: search "Cost Management" → Budgets → + Add
 #   Scope     : Subscription 1 / rg-socialcommerce

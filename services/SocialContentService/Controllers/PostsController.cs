@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace SocialContentService.Controllers
 {
     [ApiController]
-    [Route("api/social/posts")]
+    [Route("api/posts")]
     public class PostsController : ControllerBase
     {
         private readonly AppDb _db; private readonly IBusPublisher _bus;

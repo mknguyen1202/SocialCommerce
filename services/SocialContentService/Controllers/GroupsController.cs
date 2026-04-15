@@ -9,7 +9,7 @@ using System.Security.Claims;
 namespace SocialContentService.Controllers
 {
     [ApiController]
-    [Route("api/social/groups")]
+    [Route("api/groups")]
     public class GroupsController : ControllerBase
     {
         private readonly AppDb _db; private readonly IBusPublisher _bus;

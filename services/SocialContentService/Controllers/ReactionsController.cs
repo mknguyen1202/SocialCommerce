@@ -10,7 +10,7 @@ using System.Security.Claims;
 namespace SocialContentService.Controllers
 {
     [ApiController]
-    [Route("api/social/posts/{postId:guid}/reactions")]
+    [Route("api/posts/{postId:guid}/reactions")]
     public class ReactionsController : ControllerBase
     {
         private readonly AppDb _db; private readonly IBusPublisher _bus;
