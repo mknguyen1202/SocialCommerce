@@ -1,0 +1,12 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/assets/*", "/mockServiceWorker.js", "/*.ico", "/*.png", "/*.svg"]
+  },
+  "mimeTypes": {
+    ".js":  "application/javascript",
+    ".mjs": "application/javascript",
+    ".css": "text/css",
+    ".json": "application/json"
+  }
+}
