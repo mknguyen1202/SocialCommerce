@@ -28,18 +28,19 @@ export const PostEditor: React.FC<PostEditorProps> = ({ isOpen, onClose, groupSl
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
-    await createPost.mutateAsync({
+    const payload = {
       type,
       title: title.trim(),
       body: body.trim(),
       groupSlug,
       linkUrl: type === 'link' ? linkUrl.trim() : undefined,
-    });
+    };
     setTitle('');
     setBody('');
     setLinkUrl('');
     onClose();
     navigate('/social');
+    createPost.mutate(payload);
   };
 
   const inputStyle: React.CSSProperties = {
