@@ -62,9 +62,6 @@ function Upsert-App {
             --name              $Name `
             --resource-group    $RG `
             --image             $Image `
-            --registry-server   docker.io `
-            --registry-username $DockerUser `
-            --registry-password $DockerHubToken `
             --set-env-vars      @Env
     } else {
         az containerapp create `
