@@ -3,8 +3,8 @@
  */
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '');
-const CSRF_COOKIE = 'XSRF-TOKEN';
-const CSRF_HEADER = 'X-CSRF-Token';
+const CSRF_COOKIE = 'App.CSRF';
+const CSRF_HEADER = 'X-CSRF';
 
 function apiUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path;
