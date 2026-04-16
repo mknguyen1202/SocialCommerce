@@ -58,6 +58,12 @@ function Upsert-App {
     $exists = az containerapp show --name $Name --resource-group $RG --query name -o tsv 2>$null
 
     if ($exists) {
+        az containerapp registry set `
+            --name              $Name `
+            --resource-group    $RG `
+            --server            docker.io `
+            --username          $DockerUser `
+            --password          $DockerHubToken
         az containerapp update `
             --name              $Name `
             --resource-group    $RG `
