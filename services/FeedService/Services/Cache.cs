@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore.Storage;
 using StackExchange.Redis;
 
 namespace FeedService.Services
@@ -12,30 +11,55 @@ namespace FeedService.Services
 
     public class RedisCache : ICache
     {
-        private readonly StackExchange.Redis.IDatabase _db;
-        public RedisCache(IConnectionMultiplexer mux) { _db = mux.GetDatabase(); }
+        private readonly IDatabase _db;
+        private readonly ILogger<RedisCache> _log;
+        public RedisCache(IConnectionMultiplexer mux, ILogger<RedisCache> log) { _db = mux.GetDatabase(); _log = log; }
 
         private string Key(Guid userId, string cursorKey) => $"timeline:{userId}:{cursorKey}";
 
         public async Task<List<Guid>?> GetTimelineAsync(Guid userId, string cursorKey, int take)
         {
-            string key = Key(userId, cursorKey);
-            RedisValue[] vals = await _db.ListRangeAsync(key, 0, take - 1);
-            if (vals.Length == 0) return null;
-            return vals.Select(v => Guid.Parse(v!)).ToList();
+            try
+            {
+                string key = Key(userId, cursorKey);
+                RedisValue[] vals = await _db.ListRangeAsync(key, 0, take - 1);
+                if (vals.Length == 0) return null;
+                return vals.Select(v => Guid.Parse(v!)).ToList();
+            }
+            catch (RedisConnectionException ex)
+            {
+                _log.LogWarning(ex, "Redis unavailable for GetTimeline, falling through to DB");
+                return null;
+            }
         }
 
         public async Task SetTimelineAsync(Guid userId, string cursorKey, IEnumerable<Guid> postIds, TimeSpan ttl)
         {
-            string key = Key(userId, cursorKey);
-            RedisValue[] arr = postIds.Select(p => (RedisValue)p.ToString()).ToArray();
-            if (arr.Length == 0) return;
-            await _db.KeyDeleteAsync(key);
-            await _db.ListRightPushAsync(key, arr);
-            await _db.KeyExpireAsync(key, ttl);
+            try
+            {
+                string key = Key(userId, cursorKey);
+                RedisValue[] arr = postIds.Select(p => (RedisValue)p.ToString()).ToArray();
+                if (arr.Length == 0) return;
+                await _db.KeyDeleteAsync(key);
+                await _db.ListRightPushAsync(key, arr);
+                await _db.KeyExpireAsync(key, ttl);
+            }
+            catch (RedisConnectionException ex)
+            {
+                _log.LogWarning(ex, "Redis unavailable for SetTimeline, skipping cache write");
+            }
         }
 
-        public Task InvalidateTimelineAsync(Guid userId)
-            => _db.KeyDeleteAsync($"timeline:{userId}:*");
+        public async Task InvalidateTimelineAsync(Guid userId)
+        {
+            try
+            {
+                await _db.KeyDeleteAsync($"timeline:{userId}:*");
+            }
+            catch (RedisConnectionException ex)
+            {
+                _log.LogWarning(ex, "Redis unavailable for InvalidateTimeline, skipping");
+            }
+        }
     }
 }
