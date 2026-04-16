@@ -16,7 +16,7 @@ namespace SocialContentService.Controllers
 
         private Guid? CurrentUserId()
         {
-            string? val = User.FindFirst("oid")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+            string? val = User.FindFirst("uid")?.Value ?? User.FindFirst("oid")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
             return Guid.TryParse(val, out Guid g) ? g : null;
         }
 
