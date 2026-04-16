@@ -39,9 +39,19 @@ namespace FeedService.Controllers
                 await _cache.SetTimelineAsync(me, key, items.Select(i => i.PostId), TimeSpan.FromMinutes(2));
             }
 
-            string? next = items.Count > take ? Encode(items.Last().CreatedAt) : null;
-            FeedPage page = new FeedPage(items.Take(take).Select(i => new FeedItem(i.PostId, i.Rank, i.CreatedAt)), next);
-            return Ok(page);
+            bool hasMore = items.Count > take;
+            List<Timeline> page = items.Take(take).ToList();
+            string? next = hasMore ? Encode(items[take].CreatedAt) : null;
+
+            // Hydrate post IDs into full post objects
+            List<HydratedPost> posts = await _content.GetPostsByIdsAsync(page.Select(i => i.PostId), ct);
+            Dictionary<Guid, HydratedPost> lookup = posts.ToDictionary(p => p.Id);
+            List<HydratedPost> ordered = page
+                .Where(i => lookup.ContainsKey(i.PostId))
+                .Select(i => lookup[i.PostId])
+                .ToList();
+
+            return Ok(new FeedPage(ordered, next, hasMore));
         }
 
         [HttpGet("user/{userId}")]
@@ -51,9 +61,18 @@ namespace FeedService.Controllers
             take = Math.Clamp(take, 1, 100);
             DateTimeOffset before = Decode(cursor) ?? DateTimeOffset.MaxValue;
             List<Timeline> items = await _builder.GetUserAsync(userId, before, take + 1, ct);
-            string? next = items.Count > take ? Encode(items.Last().CreatedAt) : null;
-            FeedPage page = new FeedPage(items.Take(take).Select(i => new FeedItem(i.PostId, i.Rank, i.CreatedAt)), next);
-            return Ok(page);
+            bool hasMore = items.Count > take;
+            List<Timeline> page = items.Take(take).ToList();
+            string? next = hasMore ? Encode(items[take].CreatedAt) : null;
+
+            List<HydratedPost> posts = await _content.GetPostsByIdsAsync(page.Select(i => i.PostId), ct);
+            Dictionary<Guid, HydratedPost> lookup = posts.ToDictionary(p => p.Id);
+            List<HydratedPost> ordered = page
+                .Where(i => lookup.ContainsKey(i.PostId))
+                .Select(i => lookup[i.PostId])
+                .ToList();
+
+            return Ok(new FeedPage(ordered, next, hasMore));
         }
 
         [HttpGet("explore")]
@@ -71,8 +90,18 @@ namespace FeedService.Controllers
                 .Take(take + 1)
                 .ToListAsync(ct);
 
-            string? next = rows.Count > take ? Encode(rows.Last().CreatedAt) : null;
-            return Ok(new FeedPage(rows.Take(take).Select(r => new FeedItem(r.PostId, r.Rank, r.CreatedAt)), next));
+            bool hasMore = rows.Count > take;
+            var page = rows.Take(take).ToList();
+            string? next = hasMore ? Encode(rows[take].CreatedAt) : null;
+
+            List<HydratedPost> posts = await _content.GetPostsByIdsAsync(page.Select(r => r.PostId), ct);
+            Dictionary<Guid, HydratedPost> lookup = posts.ToDictionary(p => p.Id);
+            List<HydratedPost> ordered = page
+                .Where(r => lookup.ContainsKey(r.PostId))
+                .Select(r => lookup[r.PostId])
+                .ToList();
+
+            return Ok(new FeedPage(ordered, next, hasMore));
         }
 
         [HttpGet("group/{slug}")]
@@ -81,8 +110,18 @@ namespace FeedService.Controllers
             take = Math.Clamp(take, 1, 100);
             DateTimeOffset before = Decode(cursor) ?? DateTimeOffset.MaxValue;
             List<FeedItem> items = await _content.GetGroupPostsAsync(slug, before, take + 1, ct);
-            string? next = items.Count > take ? Encode(items.Last().CreatedAt) : null;
-            return Ok(new FeedPage(items.Take(take), next));
+            bool hasMore = items.Count > take;
+            List<FeedItem> page = items.Take(take).ToList();
+            string? next = hasMore ? Encode(items[take].CreatedAt) : null;
+
+            List<HydratedPost> posts = await _content.GetPostsByIdsAsync(page.Select(i => i.PostId), ct);
+            Dictionary<Guid, HydratedPost> lookup = posts.ToDictionary(p => p.Id);
+            List<HydratedPost> ordered = page
+                .Where(i => lookup.ContainsKey(i.PostId))
+                .Select(i => lookup[i.PostId])
+                .ToList();
+
+            return Ok(new FeedPage(ordered, next, hasMore));
         }
 
         [HttpPost("mark-seen")]

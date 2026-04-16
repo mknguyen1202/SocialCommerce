@@ -90,6 +90,19 @@ namespace SocialContentService.Controllers
             return p is null ? NotFound() : Ok(p.ToRead());
         }
 
+        /// <summary>Batch lookup posts by IDs (internal, used by FeedService).</summary>
+        [HttpPost("batch")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<PostReadDto>>> Batch([FromBody] List<Guid> ids)
+        {
+            if (ids is null || ids.Count == 0) return Ok(new List<PostReadDto>());
+            List<Guid> distinctIds = ids.Distinct().Take(100).ToList();
+            List<Post> posts = await _db.Posts.AsNoTracking()
+                .Where(p => distinctIds.Contains(p.Id) && p.DeletedAt == null)
+                .ToListAsync();
+            return Ok(posts.Select(p => p.ToRead()).ToList());
+        }
+
         [HttpPatch("{postId}")]
         [Authorize(Policy = "social.write")]
         public async Task<ActionResult<PostReadDto>> Update(Guid postId, [FromBody] UpdatePostDto dto)

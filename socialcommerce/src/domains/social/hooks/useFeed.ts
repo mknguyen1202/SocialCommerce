@@ -10,10 +10,10 @@ export type FeedType = 'home' | 'explore' | `group:${string}`;
 
 interface PostDTO {
   id: string;
-  author_id: string;
-  author_username: string;
-  author_display_name: string;
-  author_avatar_url: string;
+  author_user_id: string;
+  author_username?: string;
+  author_display_name?: string;
+  author_avatar_url?: string;
   group_id?: string;
   group_name?: string;
   group_slug?: string;
@@ -21,17 +21,19 @@ interface PostDTO {
   type: string;
   title: string;
   body: string;
-  media_urls: string[];
+  media_urls?: string[];
   link_url?: string;
   upvotes: number;
   downvotes: number;
-  score: number;
+  score?: number;
   user_vote?: 'up' | 'down' | null;
   comment_count: number;
-  share_count: number;
-  is_saved: boolean;
+  share_count?: number;
+  is_saved?: boolean;
+  pending_review?: boolean;
   created_at: string;
   edited_at?: string;
+  is_deleted?: boolean;
 }
 
 interface FeedPageDTO {
@@ -53,10 +55,10 @@ export function mapPostDTO(dto: PostDTO): Post {
   return {
     id: dto.id,
     author: {
-      id: dto.author_id,
-      username: dto.author_username,
-      displayName: dto.author_display_name,
-      avatarUrl: dto.author_avatar_url,
+      id: dto.author_user_id,
+      username: dto.author_username ?? '',
+      displayName: dto.author_display_name ?? '',
+      avatarUrl: dto.author_avatar_url ?? '',
       presence: 'offline',
       lastSeen: new Date(),
     },
@@ -64,15 +66,15 @@ export function mapPostDTO(dto: PostDTO): Post {
     type: dto.type as PostType,
     title: dto.title,
     body: dto.body,
-    mediaUrls: dto.media_urls,
+    mediaUrls: dto.media_urls ?? [],
     linkUrl: dto.link_url,
     upvotes: dto.upvotes,
     downvotes: dto.downvotes,
-    score: dto.score,
+    score: dto.score ?? dto.upvotes - dto.downvotes,
     userVote: dto.user_vote,
     commentCount: dto.comment_count,
-    shareCount: dto.share_count,
-    isSaved: dto.is_saved,
+    shareCount: dto.share_count ?? 0,
+    isSaved: dto.is_saved ?? false,
     createdAt: new Date(dto.created_at),
     editedAt: dto.edited_at ? new Date(dto.edited_at) : undefined,
   };
