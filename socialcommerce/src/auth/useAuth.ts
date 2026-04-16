@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { User } from "./types";
+import { setCsrfToken, getCsrfToken } from "./csrfStore";
 
 // Endpoint paths expected by the backend:
 const ME_PATH = "/auth/me";
 const CSRF_PATH = "/auth/csrf";
 const LOGIN_URL = (provider: string) => `/auth/login/${provider}`;
-const CSRF_COOKIE = "XSRF-TOKEN";
-const CSRF_HEADER = "X-CSRF";
 
 // If your API is same-origin, leave VITE_API_URL empty ("").
 // If cross-origin, set VITE_API_URL to e.g. "http://localhost:5001"
@@ -15,13 +14,6 @@ const API_BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
 function apiUrl(path: string) {
     if (/^https?:\/\//i.test(path)) return path;
     return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
-}
-
-function getCookie(name: string): string | null {
-    const m = document.cookie.match(
-        new RegExp(`(?:^|; )${name.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&")}=([^;]*)`)
-    );
-    return m ? decodeURIComponent(m[1]) : null;
 }
 
 async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}, ms = 8000) {
@@ -56,9 +48,19 @@ export function useAuth() {
         }
     }, []);
 
-    useEffect(() => {
-        fetch(apiUrl(CSRF_PATH), { credentials: "include" }).catch(() => { });
+    const fetchCsrf = useCallback(async () => {
+        try {
+            const res = await fetch(apiUrl(CSRF_PATH), { credentials: "include" });
+            if (res.ok) {
+                const data = await res.json() as { token?: string };
+                if (data?.token) setCsrfToken(data.token);
+            }
+        } catch { /* non-fatal */ }
     }, []);
+
+    useEffect(() => {
+        fetchCsrf();
+    }, [fetchCsrf]);
 
     useEffect(() => {
         let alive = true;
@@ -111,19 +113,21 @@ export function useAuth() {
             });
 
             await me();
+            await fetchCsrf();
         },
-        [me]
+        [me, fetchCsrf]
     );
 
     const logout = useCallback(async () => {
-        const csrf = getCookie(CSRF_COOKIE) ?? ""; // CSRF cookie name from backend
+        const csrf = getCsrfToken() ?? "";
         try {
             await fetch(apiUrl("/auth/logout"), {
                 method: "POST",
                 credentials: "include",
-                headers: { [CSRF_HEADER]: csrf }   // <-- was { CSRF_HEADER: csrf }
+                headers: { "X-CSRF": csrf }
             });
         } finally {
+            setCsrfToken(null);
             setUser(null);
         }
     }, []);
@@ -132,7 +136,7 @@ export function useAuth() {
         async (input: RequestInfo | URL, init?: RequestInit) => {
             const method = (init?.method ?? "GET").toUpperCase();
             const needsCsrf = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
-            const csrf = needsCsrf ? getCookie(CSRF_COOKIE) ?? "" : "";
+            const csrf = needsCsrf ? getCsrfToken() ?? "" : "";
 
             // Prefix relative paths with API_BASE
             const url =
@@ -145,7 +149,7 @@ export function useAuth() {
                 credentials: "include",
                 headers: {
                     ...(init?.headers ?? {}),
-                    ...(needsCsrf ? { [CSRF_HEADER]: csrf } : {})  // <-- was { CSRF_HEADER: csrf }
+                    ...(needsCsrf ? { "X-CSRF": csrf } : {})
                 }
             });
 
@@ -172,6 +176,7 @@ export function useAuth() {
     );
 
     const loginWithEmail = useCallback(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         async (email: string, _password: string) => {
             // Mock implementation — resolves immediately with a local user, no backend call.
             const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());

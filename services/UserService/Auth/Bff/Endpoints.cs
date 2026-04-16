@@ -94,11 +94,16 @@ public static class AuthEndpoints
             return Results.NoContent();
         });
 
-        // Seed the CSRF cookie (anonymous — called on SPA mount)
+        // Returns the CSRF token in the response body so cross-origin SPAs can read it
+        // (document.cookie can't read cookies set by a different domain).
         g.MapGet("/csrf", (HttpContext ctx, ICsrfCookieWriter csrf) =>
         {
-            csrf.Write(ctx);
-            return Results.NoContent();
+            // Re-use existing cookie if present; otherwise write a fresh one.
+            string token = ctx.Request.Cookies.TryGetValue(csrf.CookieName, out string? existing)
+                           && !string.IsNullOrEmpty(existing)
+                ? existing
+                : csrf.Write(ctx);
+            return Results.Ok(new { token });
         });
 
         // Issues a short-lived JWT for the SignalR hub (client uses ?access_token=)

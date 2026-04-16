@@ -1,21 +1,17 @@
 /**
  * Shared API client with CSRF support and request/response interceptors.
+ * CSRF token is stored in csrfStore (set by useAuth on mount and after login)
+ * because document.cookie cannot read cookies from the backend domain
+ * in a cross-origin BFF setup.
  */
+import { getCsrfToken } from '../../auth/csrfStore';
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '');
-const CSRF_COOKIE = 'App.CSRF';
 const CSRF_HEADER = 'X-CSRF';
 
 function apiUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path;
   return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
-}
-
-function getCsrfToken(): string | null {
-  const match = document.cookie.match(
-    new RegExp(`(?:^|; )${CSRF_COOKIE.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&')}=([^;]*)`)
-  );
-  return match ? decodeURIComponent(match[1]) : null;
 }
 
 export interface ApiError {

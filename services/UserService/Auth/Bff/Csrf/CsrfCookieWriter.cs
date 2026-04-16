@@ -6,8 +6,8 @@ namespace UserService.Auth.Bff.Csrf;
 public interface ICsrfCookieWriter
 {
     string CookieName { get; }
-    /// <summary>Writes a new CSRF token cookie (readable by JS) if missing, or refreshes it after login.</summary>
-    void Write(HttpContext ctx);
+    /// <summary>Writes a new CSRF token cookie (readable by JS) if missing, or refreshes it after login. Returns the token value.</summary>
+    string Write(HttpContext ctx);
     /// <summary>Deletes the CSRF cookie (e.g., on logout).</summary>
     void Delete(HttpContext ctx);
 }
@@ -20,14 +20,14 @@ public sealed class CsrfCookieWriter : ICsrfCookieWriter
 
     public string CookieName => CookieSchemes.CsrfCookieName;
 
-    public void Write(HttpContext ctx)
+    public string Write(HttpContext ctx)
     {
         string token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         SameSiteMode sameSite = _cookieOpts.CrossSite ? SameSiteMode.None : SameSiteMode.Lax;
 
         CookieOptions opts = new CookieOptions
         {
-            HttpOnly = false,                         // must be readable by JS to echo in X-CSRF
+            HttpOnly = false,
             Secure = true,
             SameSite = sameSite,
             IsEssential = true
@@ -36,6 +36,7 @@ public sealed class CsrfCookieWriter : ICsrfCookieWriter
             opts.Domain = _cookieOpts.Domain;
 
         ctx.Response.Cookies.Append(CookieSchemes.CsrfCookieName, token, opts);
+        return token;
     }
 
     public void Delete(HttpContext ctx)
