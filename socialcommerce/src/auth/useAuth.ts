@@ -6,7 +6,7 @@ const ME_PATH = "/auth/me";
 const CSRF_PATH = "/auth/csrf";
 const LOGIN_URL = (provider: string) => `/auth/login/${provider}`;
 const CSRF_COOKIE = "XSRF-TOKEN";
-const CSRF_HEADER = "X-CSRF-Token";
+const CSRF_HEADER = "X-CSRF";
 
 // If your API is same-origin, leave VITE_API_URL empty ("").
 // If cross-origin, set VITE_API_URL to e.g. "http://localhost:5001"

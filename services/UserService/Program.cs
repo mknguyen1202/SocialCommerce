@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Yarp.ReverseProxy.Transforms;
@@ -48,7 +49,10 @@ builder.Services.AddCors(o => o.AddPolicy("spa", p =>
 // Registers App (session) + External (temp) cookie schemes
 AuthenticationBuilder authBuilder = builder.Services.AddAppCookieAuthentication(o =>
 {
-    o.CrossSite = true; // set false if SPA and API are same origin
+    // CrossSite=true sets SameSite=None;Secure (required for cross-origin cookie sends).
+    // Disable in development because Docker runs on plain HTTP and browsers refuse
+    // to store Secure cookies from HTTP origins, which breaks the OAuth correlation check.
+    o.CrossSite = !builder.Environment.IsDevelopment();
 });
 
 // Built-in Google handler (CallbackPath must match Google Console)
@@ -154,6 +158,13 @@ if (app.Environment.IsDevelopment())
 }
 
 // Pipeline order
+// Must be first: rewrites scheme/host from X-Forwarded-Proto/Host set by
+// Azure Container Apps reverse proxy, so the Google OAuth redirect_uri is
+// built with "https://" instead of the internal "http://" scheme.
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 app.UseCors("spa");            // if cross-origin
 app.UseAuthentication();       // reads App.Auth cookie / ApiJwt tokens
 app.UseCsrfDoubleSubmit();     // validates X-CSRF on writes
