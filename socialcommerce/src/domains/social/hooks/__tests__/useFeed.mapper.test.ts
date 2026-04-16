@@ -4,7 +4,7 @@ import { mapPostDTO } from '../useFeed';
 
 const BASE_DTO = {
     id: 'post-1',
-    author_id: 'usr-1',
+    author_user_id: 'usr-1',
     author_username: 'alexj',
     author_display_name: 'Alex Johnson',
     author_avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alexj',

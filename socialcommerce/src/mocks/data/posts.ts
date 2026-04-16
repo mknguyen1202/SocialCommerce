@@ -43,7 +43,7 @@ function post(
     const usr = u(authorId);
     return {
         id,
-        author_id: usr.id,
+        author_user_id: usr.id,
         author_username: usr.username,
         author_display_name: usr.display_name,
         author_avatar_url: usr.avatar_url,
