@@ -42,6 +42,7 @@ $CS_INVENTORY = az keyvault secret show --vault-name $KV --name "ConnStr-Invento
 $CS_MEDIA     = az keyvault secret show --vault-name $KV --name "ConnStr-MediaDb"        --query value -o tsv
 $CS_MOD       = az keyvault secret show --vault-name $KV --name "ConnStr-ModerationDb"   --query value -o tsv
 $CS_SIGNAL    = az keyvault secret show --vault-name $KV --name "ConnStr-SignalingDb"    --query value -o tsv
+$SB_CONN      = az keyvault secret show --vault-name $KV --name "ServiceBus--Connection" --query value -o tsv
 
 # ---------------------------------------------------------------------------
 # Helper: create or update a container app
@@ -129,6 +130,8 @@ Upsert-App -Name "socialcontentservice" -Image (img "socialcontentservice") -Env
     "ConnectionStrings__Default=${CS_CONTENT}"
     "Authentication__Jwt__Issuer=SocialCommerce"
     "Authentication__Jwt__SymmetricKey=${JWT_KEY}"
+    "ServiceBus__Connection=${SB_CONN}"
+    "ServiceBus__Topic=social-events"
 )
 
 Upsert-App -Name "moderationservice" -Image (img "moderationservice") -Env @(
@@ -192,6 +195,9 @@ Upsert-App -Name "feedservice" -Image (img "feedservice") -Env @(
     "Redis__Connection=${REDIS_URL}"
     "GraphService__BaseUrl=http://socialgraphservice"
     "ContentService__BaseUrl=http://socialcontentservice"
+    "ServiceBus__Connection=${SB_CONN}"
+    "ServiceBus__Topic=social-events"
+    "ServiceBus__Subscription=feed"
 )
 
 Upsert-App -Name "communicationservice" -Image (img "communicationservice") -Env @(

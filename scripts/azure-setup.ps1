@@ -59,6 +59,9 @@ GitHub Secrets:
 # az keyvault secret set --vault-name $KV_NAME --name "InternalApiKey"    --value "sc-dev-internal-api-key"
 # az keyvault secret set --vault-name $KV_NAME --name "StorageConnection" --value "<connection-string from above>"
 # az keyvault secret set --vault-name $KV_NAME --name "UpstashRedisUrl"   --value "<upstash-redis-connection-string>"
+# Service Bus — get the primary connection string then store it:
+#   $SB_CS = az servicebus namespace authorization-rule keys list --resource-group $RG --namespace-name $SB_NAMESPACE --name RootManageSharedAccessKey --query primaryConnectionString -o tsv
+#   az keyvault secret set --vault-name $KV_NAME --name "ServiceBus--Connection" --value $SB_CS
 
 # --- Budget alert (do this in the portal — CLI version is preview/broken) ---
 # Portal: search "Cost Management" → Budgets → + Add
