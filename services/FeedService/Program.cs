@@ -1,8 +1,11 @@
+using System.Text;
 using Azure.Messaging.ServiceBus;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using FeedService.Data;
 using FeedService.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
@@ -56,6 +59,34 @@ OpenTelemetryBuilder otel = builder.Services.AddOpenTelemetry()
 if (!string.IsNullOrWhiteSpace(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
     otel.UseAzureMonitor();
 
+// AuthN/AuthZ
+string jwtKey = builder.Configuration["Authentication:Jwt:SymmetricKey"] ?? "";
+string jwtIssuer = builder.Configuration["Authentication:Jwt:Issuer"] ?? "SocialCommerce";
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(o =>
+{
+    if (!string.IsNullOrWhiteSpace(jwtKey))
+    {
+        byte[] keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = false,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    }
+});
+
+builder.Services.AddAuthorization(opts =>
+{
+    opts.AddPolicy("social.read", p => p.RequireAuthenticatedUser());
+    opts.AddPolicy("social.write", p => p.RequireAuthenticatedUser());
+});
+
 // Swagger
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
@@ -81,6 +112,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapHealthChecks("/health/ready");
 app.MapHealthChecks("/health/live");

@@ -198,6 +198,8 @@ Upsert-App -Name "feedservice" -Image (img "feedservice") -Env @(
     "ServiceBus__Connection=${SB_CONN}"
     "ServiceBus__Topic=social-events"
     "ServiceBus__Subscription=feed"
+    "Authentication__Jwt__Issuer=SocialCommerce"
+    "Authentication__Jwt__SymmetricKey=${JWT_KEY}"
 )
 
 Upsert-App -Name "communicationservice" -Image (img "communicationservice") -Env @(

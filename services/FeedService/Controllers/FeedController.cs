@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using FeedService.Data;
 using FeedService.Dtos;
 using FeedService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,25 +20,34 @@ namespace FeedService.Controllers
         public FeedController(AppDb db, IFeedBuilder builder, ICache cache, IContentClient content, ILogger<FeedController> log)
         { _db = db; _builder = builder; _cache = cache; _content = content; _log = log; }
 
-        [HttpGet("home")]
-        //[Authorize(Policy = "social.read")]
-        public async Task<ActionResult<FeedPage>> Home([FromQuery] Guid me, [FromQuery] string? cursor, [FromQuery] int take = 20, CancellationToken ct = default)
+        private Guid? CurrentUserId()
         {
+            string? val = HttpContext.User.FindFirst("uid")?.Value ?? HttpContext.User.FindFirst("oid")?.Value ?? HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? HttpContext.User.FindFirst("sub")?.Value;
+            return Guid.TryParse(val, out Guid g) ? g : null;
+        }
+
+        [HttpGet("home")]
+        [Authorize(Policy = "social.read")]
+        public async Task<ActionResult<FeedPage>> Home([FromQuery] string? cursor, [FromQuery] int take = 20, CancellationToken ct = default)
+        {
+            Guid? me = CurrentUserId();
+            if (me is null) return Unauthorized();
+
             take = Math.Clamp(take, 1, 100);
             DateTimeOffset before = Decode(cursor) ?? DateTimeOffset.MaxValue;
 
             // Try cache first (optional; using time-bucket as cursor key)
             string key = before == DateTimeOffset.MaxValue ? "now" : before.ToUnixTimeSeconds().ToString();
-            List<Guid>? cached = await _cache.GetTimelineAsync(me, key, take);
+            List<Guid>? cached = await _cache.GetTimelineAsync(me.Value, key, take);
             List<Timeline> items;
             if (cached != null)
             {
-                items = cached.Select(p => new Timeline { UserId = me, PostId = p, Rank = 0, CreatedAt = before }).ToList();
+                items = cached.Select(p => new Timeline { UserId = me.Value, PostId = p, Rank = 0, CreatedAt = before }).ToList();
             }
             else
             {
-                items = await _builder.GetHomeAsync(me, before, take + 1, ct);
-                await _cache.SetTimelineAsync(me, key, items.Select(i => i.PostId), TimeSpan.FromMinutes(2));
+                items = await _builder.GetHomeAsync(me.Value, before, take + 1, ct);
+                await _cache.SetTimelineAsync(me.Value, key, items.Select(i => i.PostId), TimeSpan.FromMinutes(2));
             }
 
             bool hasMore = items.Count > take;
@@ -56,8 +67,8 @@ namespace FeedService.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        //[Authorize(Policy = "social.read")]
-        public async Task<ActionResult<FeedPage>> User(Guid userId, [FromQuery] string? cursor, [FromQuery] int take = 20, CancellationToken ct = default)
+        [Authorize(Policy = "social.read")]
+        public async Task<ActionResult<FeedPage>> UserFeed(Guid userId, [FromQuery] string? cursor, [FromQuery] int take = 20, CancellationToken ct = default)
         {
             take = Math.Clamp(take, 1, 100);
             DateTimeOffset before = Decode(cursor) ?? DateTimeOffset.MaxValue;
