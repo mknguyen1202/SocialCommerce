@@ -52,7 +52,7 @@ AuthenticationBuilder authBuilder = builder.Services.AddAppCookieAuthentication(
     // CrossSite=true sets SameSite=None;Secure (required for cross-origin cookie sends).
     // Disable in development because Docker runs on plain HTTP and browsers refuse
     // to store Secure cookies from HTTP origins, which breaks the OAuth correlation check.
-    o.CrossSite = !builder.Environment.IsDevelopment();
+    o.CrossSite = true; // deploy-aca.ps1 sets ASPNETCORE_ENVIRONMENT=Development even in production
 });
 
 // Built-in Google handler (CallbackPath must match Google Console)
@@ -161,10 +161,13 @@ if (app.Environment.IsDevelopment())
 // Must be first: rewrites scheme/host from X-Forwarded-Proto/Host set by
 // Azure Container Apps reverse proxy, so the Google OAuth redirect_uri is
 // built with "https://" instead of the internal "http://" scheme.
-app.UseForwardedHeaders(new ForwardedHeadersOptions
+ForwardedHeadersOptions fwdOpts = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
+};
+fwdOpts.KnownNetworks.Clear();  // trust Azure Container Apps proxy (non-loopback IP)
+fwdOpts.KnownProxies.Clear();
+app.UseForwardedHeaders(fwdOpts);
 app.UseCors("spa");            // if cross-origin
 app.UseAuthentication();       // reads App.Auth cookie / ApiJwt tokens
 app.UseCsrfDoubleSubmit();     // validates X-CSRF on writes
