@@ -60,11 +60,8 @@ namespace FeedService.Services
                             IGraphClient graph = scope.ServiceProvider.GetRequiredService<IGraphClient>();
                             HashSet<Guid> followers = await graph.GetFollowersAsync(authorId, arg.CancellationToken);
 
-                            if (followers.Count > 0)
-                            {
-                                IFeedBuilder builder = scope.ServiceProvider.GetRequiredService<IFeedBuilder>();
-                                await builder.UpsertFanoutAsync(authorId, postId, createdAt, followers, arg.CancellationToken);
-                            }
+                            IFeedBuilder builder = scope.ServiceProvider.GetRequiredService<IFeedBuilder>();
+                            await builder.UpsertFanoutAsync(authorId, postId, createdAt, followers, arg.CancellationToken);
                             break;
                         }
                     case "user.followed":

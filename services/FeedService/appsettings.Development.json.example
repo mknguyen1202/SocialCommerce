@@ -1,0 +1,11 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "ServiceBus": {
+    "Connection": "<az servicebus namespace authorization-rule keys list --resource-group rg-socialcommerce --namespace-name sb-socialcommerce --name RootManageSharedAccessKey --query primaryConnectionString -o tsv>"
+  }
+}

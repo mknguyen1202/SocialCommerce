@@ -1,0 +1,14 @@
+{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Warning"
+        }
+    },
+    "ConnectionStrings": {
+        "Default": "Host=localhost;Port=5432;Database=social_content;Username=postgres;Password=1234;Ssl Mode=Disable"
+    },
+    "ServiceBus": {
+        "Connection": "<az servicebus namespace authorization-rule keys list --resource-group rg-socialcommerce --namespace-name sb-socialcommerce --name RootManageSharedAccessKey --query primaryConnectionString -o tsv>"
+    }
+}

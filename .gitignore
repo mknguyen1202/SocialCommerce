@@ -39,3 +39,7 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Local dev secrets — never commit real connection strings
+appsettings.Development.json
+appsettings.Local.json

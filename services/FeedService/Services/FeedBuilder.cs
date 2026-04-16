@@ -33,8 +33,10 @@ namespace FeedService.Services
 
         public async Task UpsertFanoutAsync(Guid authorId, Guid postId, DateTimeOffset createdAt, IEnumerable<Guid> followerIds, CancellationToken ct)
         {
+            // Include the author so their own posts appear in their home feed.
+            IEnumerable<Guid> recipients = followerIds.Append(authorId).Distinct();
             // Simple rank: recency. Later, mix-in social/quality signals.
-            IEnumerable<Timeline> rows = followerIds.Select(fid => new Timeline
+            IEnumerable<Timeline> rows = recipients.Select(fid => new Timeline
             {
                 UserId = fid,
                 PostId = postId,
