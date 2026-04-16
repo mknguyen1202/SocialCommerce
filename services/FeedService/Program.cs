@@ -28,14 +28,14 @@ builder.Services.AddSingleton<ICache, RedisCache>();
 builder.Services.AddHttpClient<IGraphClient, GraphClient>(c =>
 {
     c.BaseAddress = new Uri(builder.Configuration["GraphService:BaseUrl"] ?? "http://localhost:5005");
-    c.Timeout = TimeSpan.FromSeconds(builder.Configuration.GetValue("GraphService:TimeoutSeconds", 4));
+    c.Timeout = TimeSpan.FromSeconds(builder.Configuration.GetValue("GraphService:TimeoutSeconds", 30));
 });
 
 // HttpClient for SocialContent (group feed)
 builder.Services.AddHttpClient<IContentClient, ContentClient>(c =>
 {
     c.BaseAddress = new Uri(builder.Configuration["ContentService:BaseUrl"] ?? "http://localhost:5003");
-    c.Timeout = TimeSpan.FromSeconds(builder.Configuration.GetValue("ContentService:TimeoutSeconds", 4));
+    c.Timeout = TimeSpan.FromSeconds(builder.Configuration.GetValue("ContentService:TimeoutSeconds", 30));
 });
 
 // Event bus (optional in dev)

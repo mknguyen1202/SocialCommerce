@@ -46,10 +46,11 @@ namespace FeedService.Controllers
             // Hydrate post IDs into full post objects
             List<HydratedPost> posts = await _content.GetPostsByIdsAsync(page.Select(i => i.PostId), ct);
             Dictionary<Guid, HydratedPost> lookup = posts.ToDictionary(p => p.Id);
-            List<HydratedPost> ordered = page
-                .Where(i => lookup.ContainsKey(i.PostId))
-                .Select(i => lookup[i.PostId])
-                .ToList();
+            // Preserve timeline order; fall back to stub items when content service is unavailable
+            List<object> ordered = page.Select(i =>
+                lookup.TryGetValue(i.PostId, out HydratedPost? p)
+                    ? (object)p
+                    : new FeedItem(i.PostId, i.Rank, i.CreatedAt)).ToList();
 
             return Ok(new FeedPage(ordered, next, hasMore));
         }
@@ -67,10 +68,10 @@ namespace FeedService.Controllers
 
             List<HydratedPost> posts = await _content.GetPostsByIdsAsync(page.Select(i => i.PostId), ct);
             Dictionary<Guid, HydratedPost> lookup = posts.ToDictionary(p => p.Id);
-            List<HydratedPost> ordered = page
-                .Where(i => lookup.ContainsKey(i.PostId))
-                .Select(i => lookup[i.PostId])
-                .ToList();
+            List<object> ordered = page.Select(i =>
+                lookup.TryGetValue(i.PostId, out HydratedPost? p)
+                    ? (object)p
+                    : new FeedItem(i.PostId, i.Rank, i.CreatedAt)).ToList();
 
             return Ok(new FeedPage(ordered, next, hasMore));
         }
@@ -96,10 +97,10 @@ namespace FeedService.Controllers
 
             List<HydratedPost> posts = await _content.GetPostsByIdsAsync(page.Select(r => r.PostId), ct);
             Dictionary<Guid, HydratedPost> lookup = posts.ToDictionary(p => p.Id);
-            List<HydratedPost> ordered = page
-                .Where(r => lookup.ContainsKey(r.PostId))
-                .Select(r => lookup[r.PostId])
-                .ToList();
+            List<object> ordered = page.Select(r =>
+                lookup.TryGetValue(r.PostId, out HydratedPost? p)
+                    ? (object)p
+                    : new FeedItem(r.PostId, r.Rank, r.CreatedAt)).ToList();
 
             return Ok(new FeedPage(ordered, next, hasMore));
         }
@@ -116,10 +117,10 @@ namespace FeedService.Controllers
 
             List<HydratedPost> posts = await _content.GetPostsByIdsAsync(page.Select(i => i.PostId), ct);
             Dictionary<Guid, HydratedPost> lookup = posts.ToDictionary(p => p.Id);
-            List<HydratedPost> ordered = page
-                .Where(i => lookup.ContainsKey(i.PostId))
-                .Select(i => lookup[i.PostId])
-                .ToList();
+            List<object> ordered = page.Select(i =>
+                lookup.TryGetValue(i.PostId, out HydratedPost? p)
+                    ? (object)p
+                    : new FeedItem(i.PostId, 0, i.CreatedAt)).ToList();
 
             return Ok(new FeedPage(ordered, next, hasMore));
         }

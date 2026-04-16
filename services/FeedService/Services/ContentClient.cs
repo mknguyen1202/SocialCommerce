@@ -26,10 +26,17 @@ namespace FeedService.Services
         {
             List<Guid> ids = postIds.ToList();
             if (ids.Count == 0) return [];
-            HttpResponseMessage response = await _http.PostAsJsonAsync("/api/posts/batch", ids, ct);
-            response.EnsureSuccessStatusCode();
-            List<HydratedPost>? posts = await response.Content.ReadFromJsonAsync<List<HydratedPost>>(ct);
-            return posts ?? [];
+            try
+            {
+                HttpResponseMessage response = await _http.PostAsJsonAsync("/api/posts/batch", ids, ct);
+                response.EnsureSuccessStatusCode();
+                List<HydratedPost>? posts = await response.Content.ReadFromJsonAsync<List<HydratedPost>>(ct);
+                return posts ?? [];
+            }
+            catch (Exception)
+            {
+                return [];
+            }
         }
 
         private record GroupPostsResponse(List<PostSummary>? Items, string? NextCursor);
