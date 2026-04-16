@@ -136,3 +136,4 @@ jobs:
           ./scripts/deploy-aca.ps1
           -ImageTag "${{ github.sha }}"
           -DockerUser "${{ secrets.DOCKER_HUB_USERNAME }}"
+          -DockerHubToken "${{ secrets.DOCKER_HUB_TOKEN }}"

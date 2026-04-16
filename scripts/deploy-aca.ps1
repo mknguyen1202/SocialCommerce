@@ -6,7 +6,8 @@
 # =============================================================================
 param(
     [Parameter(Mandatory)][string]$ImageTag,
-    [Parameter(Mandatory)][string]$DockerUser
+    [Parameter(Mandatory)][string]$DockerUser,
+    [Parameter(Mandatory)][string]$DockerHubToken
 )
 
 $ErrorActionPreference = "Stop"
@@ -58,21 +59,27 @@ function Upsert-App {
 
     if ($exists) {
         az containerapp update `
-            --name           $Name `
-            --resource-group $RG `
-            --image          $Image `
-            --set-env-vars   @Env
+            --name              $Name `
+            --resource-group    $RG `
+            --image             $Image `
+            --registry-server   docker.io `
+            --registry-username $DockerUser `
+            --registry-password $DockerHubToken `
+            --set-env-vars      @Env
     } else {
         az containerapp create `
-            --name           $Name `
-            --resource-group $RG `
-            --environment    $ACA_ENV `
-            --image          $Image `
-            --min-replicas   0 `
-            --max-replicas   3 `
-            --target-port    8080 `
-            --ingress        $Ingress `
-            --env-vars       @Env
+            --name              $Name `
+            --resource-group    $RG `
+            --environment       $ACA_ENV `
+            --image             $Image `
+            --min-replicas      0 `
+            --max-replicas      3 `
+            --target-port       8080 `
+            --ingress           $Ingress `
+            --registry-server   docker.io `
+            --registry-username $DockerUser `
+            --registry-password $DockerHubToken `
+            --env-vars          @Env
     }
 
     if ($LASTEXITCODE -ne 0) { throw "Failed to deploy $Name (exit $LASTEXITCODE)" }
