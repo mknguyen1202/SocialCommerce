@@ -1,6 +1,0 @@
-@AuthNService_HostAddress = http://localhost:5059
-
-GET {{AuthNService_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
