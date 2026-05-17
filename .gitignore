@@ -1,5 +1,7 @@
-# Doc directories (excluded from version control)
-/doc/
+# Doc directories
+# Publish the main /doc/ tree so README links resolve on GitHub,
+# but keep ephemeral debug captures and the frontend's internal doc tree out.
+/doc/debug/
 /socialcommerce/doc/
 
 # .NET build outputs
