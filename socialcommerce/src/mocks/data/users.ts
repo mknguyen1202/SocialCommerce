@@ -13,8 +13,10 @@ export const AUTH_USER = {
     id: 'usr-1',
     name: 'Alex Johnson',
     email: 'alex.johnson@example.com',
-    roles: ['user'],
+    roles: ['user', 'vendor'],
     permissions: ['user.read', 'user.write', 'orders.read', 'orders.write'],
+    avatarUrl: null as string | null,
+    bio: null as string | null,
 };
 
 export const USERS: UserDTO[] = [

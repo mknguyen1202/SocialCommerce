@@ -1,8 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { LucideIcon } from 'lucide-react';
 import { useUnifiedSearch } from '../../shared/hooks/useUnifiedSearch';
 import { Avatar } from '../../shared/components/Avatar';
 import { Skeleton } from '../../shared/components/Skeleton';
+import { Icon } from '../../shared/components/Icon';
+import {
+  Search, X, User, Newspaper, Pencil, Clapperboard, ShoppingBag,
+} from '../../shared/components/iconRegistry';
 import { useUIStore } from '../stores/uiStore';
 import type { NotificationDomain } from '../../shared/types/domain';
 
@@ -22,7 +27,7 @@ const DOMAIN_COLORS: Record<NotificationDomain, string> = {
   commerce: 'var(--color-warning)',
 };
 
-interface SectionHeaderProps { label: string; icon: string; count: number }
+interface SectionHeaderProps { label: string; icon: LucideIcon; count: number }
 const SectionHeader: React.FC<SectionHeaderProps> = ({ label, icon, count }) => (
   <div
     style={{
@@ -37,7 +42,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ label, icon, count }) => 
       letterSpacing: '0.06em',
     }}
   >
-    <span>{icon}</span>
+    <Icon icon={icon} size={12} />
     <span>{label}</span>
     <span style={{ marginLeft: 'auto', fontWeight: 'var(--font-weight-normal)' as React.CSSProperties['fontWeight'] }}>
       {count}
@@ -163,7 +168,9 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ isOpen, onClose })
             borderBottom: '1px solid var(--color-surface-3)',
           }}
         >
-          <span style={{ color: 'var(--color-text-muted)', fontSize: 18 }}>🔍</span>
+          <span style={{ color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}>
+            <Icon icon={Search} size={18} />
+          </span>
           <input
             ref={inputRef}
             type="search"
@@ -194,12 +201,14 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ isOpen, onClose })
               border: 'none',
               color: 'var(--color-text-muted)',
               cursor: 'pointer',
-              fontSize: 16,
               padding: 4,
               borderRadius: 'var(--radius-sm)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            ✕
+            <Icon icon={X} size={16} />
           </button>
         </div>
 
@@ -242,7 +251,7 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ isOpen, onClose })
           {/* Users */}
           {results && results.users.length > 0 && (
             <section aria-label="Users">
-              <SectionHeader label="Users" icon="👤" count={results.users.length} />
+              <SectionHeader label="Users" icon={User} count={results.users.length} />
               {results.users.map((u) => (
                 <ResultRow key={u.id} onClick={() => go('communication', `/communication?dm=${encodeURIComponent(u.id)}`)}>
                   <Avatar src={u.avatarUrl} name={u.displayName} size="md" />
@@ -272,7 +281,7 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ isOpen, onClose })
           {/* Posts */}
           {results && results.posts.length > 0 && (
             <section aria-label="Posts">
-              <SectionHeader label="Posts" icon="📰" count={results.posts.length} />
+              <SectionHeader label="Posts" icon={Newspaper} count={results.posts.length} />
               {results.posts.map((p) => (
                 <ResultRow key={p.id} onClick={() => go('social', `/social/post/${p.id}`)}>
                   <span
@@ -284,11 +293,11 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ isOpen, onClose })
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: 16,
+                      color: '#fff',
                       flexShrink: 0,
                     }}
                   >
-                    📝
+                    <Icon icon={Pencil} size={14} />
                   </span>
                   <div style={{ minWidth: 0 }}>
                     <div
@@ -316,7 +325,7 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ isOpen, onClose })
           {/* Theaters */}
           {results && results.theaters.length > 0 && (
             <section aria-label="Theaters">
-              <SectionHeader label="Theaters" icon="🎬" count={results.theaters.length} />
+              <SectionHeader label="Theaters" icon={Clapperboard} count={results.theaters.length} />
               {results.theaters.map((t) => (
                 <ResultRow key={t.id} onClick={() => go('streaming', `/streaming/theater/${t.id}`)}>
                   <span
@@ -328,11 +337,11 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ isOpen, onClose })
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: 16,
+                      color: '#fff',
                       flexShrink: 0,
                     }}
                   >
-                    🎬
+                    <Icon icon={Clapperboard} size={14} />
                   </span>
                   <div style={{ minWidth: 0 }}>
                     <div
@@ -362,7 +371,7 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ isOpen, onClose })
           {/* Products */}
           {results && results.products.length > 0 && (
             <section aria-label="Products">
-              <SectionHeader label="Products" icon="🛒" count={results.products.length} />
+              <SectionHeader label="Products" icon={ShoppingBag} count={results.products.length} />
               {results.products.map((p) => (
                 <ResultRow key={p.id} onClick={() => go('commerce', `/commerce/product/${p.id}`)}>
                   {p.thumbnailUrl ? (
@@ -382,11 +391,11 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ isOpen, onClose })
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: 16,
+                        color: '#fff',
                         flexShrink: 0,
                       }}
                     >
-                      🛒
+                      <Icon icon={ShoppingBag} size={14} />
                     </span>
                   )}
                   <div style={{ minWidth: 0 }}>

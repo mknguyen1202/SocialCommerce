@@ -1,21 +1,24 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import type { LucideIcon } from 'lucide-react';
 import { Badge } from '../../shared/components/Badge';
+import { Icon } from '../../shared/components/Icon';
+import { MessageSquare, Newspaper, Clapperboard, ShoppingBag } from '../../shared/components/iconRegistry';
 import { useUIStore, type Domain } from '../stores/uiStore';
 import { useIsMobile } from '../../shared/hooks/useIsMobile';
 
 interface TabItem {
     domain: Domain;
     label: string;
-    emoji: string;
+    icon: LucideIcon;
     path: string;
 }
 
 const TAB_ITEMS: TabItem[] = [
-    { domain: 'communication', label: 'Chat', emoji: '💬', path: '/communication' },
-    { domain: 'social', label: 'Social', emoji: '📰', path: '/social' },
-    { domain: 'streaming', label: 'Live', emoji: '🎬', path: '/streaming' },
-    { domain: 'commerce', label: 'Shop', emoji: '🛒', path: '/commerce' },
+    { domain: 'communication', label: 'Chat',   icon: MessageSquare, path: '/communication' },
+    { domain: 'social',         label: 'Social', icon: Newspaper,     path: '/social' },
+    { domain: 'streaming',      label: 'Live',   icon: Clapperboard,  path: '/streaming' },
+    { domain: 'commerce',       label: 'Shop',   icon: ShoppingBag,   path: '/commerce' },
 ];
 
 export const BottomTabBar: React.FC = () => {
@@ -61,7 +64,7 @@ export const BottomTabBar: React.FC = () => {
                         }}
                     >
                         <span style={{ fontSize: 22, position: 'relative' }}>
-                            {item.emoji}
+                            <Icon icon={item.icon} size={22} />
                             {unread > 0 && (
                                 <Badge
                                     count={unread}

@@ -5,4 +5,6 @@ export type User = {
     roles: string[];         // e.g., ["Admin"]
     permissions: string[];   // e.g., ["user.read", "orders.write"]
     isNew?: boolean;         // optional (if your backend sends it)
+    avatarUrl?: string | null;
+    bio?: string | null;
 } | null;

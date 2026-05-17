@@ -1,4 +1,6 @@
 import React from 'react';
+import { Icon } from '../../shared/components/Icon';
+import { AlertTriangle } from '../../shared/components/iconRegistry';
 import { useSocketStatus } from '../../shared/realtime/useSocket';
 import { useUIStore } from '../stores/uiStore';
 
@@ -28,7 +30,7 @@ export const ReconnectBanner: React.FC = () => {
         flexShrink: 0,
       }}
     >
-      ⚠️ Reconnecting to real-time services…
+      <Icon icon={AlertTriangle} size={16} style={{ flexShrink: 0 }} /> Reconnecting to real-time services…
     </div>
   );
 };

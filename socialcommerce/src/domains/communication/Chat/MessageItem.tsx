@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { DomainMessage, DomainUser } from '../../../shared/types/domain';
 import { UserAvatar } from '../shared/UserAvatar';
 import { ReactionBar } from './ReactionBar';
@@ -29,9 +29,27 @@ export const MessageItem: React.FC<MessageItemProps> = React.memo(({
   onReply,
 }) => {
   const isMine = message.sender.id === currentUser?.id;
-  const [isHovered, setIsHovered] = useState(false);
+  const [isSelected, setIsSelected] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  // Dismiss action bar when clicking outside this message row
+  useEffect(() => {
+    if (!isSelected) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (rowRef.current && !rowRef.current.contains(e.target as Node)) {
+        setIsSelected(false);
+      }
+    };
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsSelected(false); };
+    document.addEventListener('mousedown', handleOutside);
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, [isSelected]);
 
   const { mutate: editMessage } = useEditMessage(message.conversationId);
   const { mutate: deleteMessage } = useDeleteMessage(message.conversationId);
@@ -53,35 +71,51 @@ export const MessageItem: React.FC<MessageItemProps> = React.memo(({
   const isFailed = message.status === 'failed';
   const isSending = message.status === 'sending';
 
+  // Border-radius creates the "tail" effect on the first bubble in a group.
+  // Tail corner = top-right for mine, top-left for theirs.
+  const bubbleRadius = isMine
+    ? isGrouped ? '18px' : '18px 4px 18px 18px'
+    : isGrouped ? '18px' : '4px 18px 18px 18px';
+
   return (
     <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      ref={rowRef}
       style={{
         display: 'flex',
-        gap: 12,
-        padding: isGrouped ? '2px 16px' : '8px 16px 2px',
+        flexDirection: isMine ? 'row-reverse' : 'row',
+        alignItems: 'flex-end',
+        gap: 8,
+        padding: isGrouped ? '1px 16px' : '8px 16px 2px',
         position: 'relative',
-        background: isHovered ? 'rgba(255,255,255,0.03)' : 'transparent',
-        opacity: isSending ? 0.7 : 1,
-        borderLeft: isFailed ? '2px solid var(--color-danger)' : '2px solid transparent',
+        opacity: isSending ? 0.65 : 1,
       }}
     >
-      {/* Avatar column — only on first of a group */}
-      <div style={{ width: 40, flexShrink: 0 }}>
-        {!isGrouped && <UserAvatar user={message.sender} size="md" showPresence={false} />}
+      {/* Avatar slot — theirs only, only on first of a group */}
+      <div style={{ width: 36, flexShrink: 0, alignSelf: 'flex-end' }}>
+        {!isMine && !isGrouped && (
+          <UserAvatar user={message.sender} size="md" showPresence={false} />
+        )}
       </div>
 
-      {/* Message content column */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Header row */}
-        {!isGrouped && (
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 2 }}>
+      {/* Content column — max 70% width keeps bubbles readable */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: isMine ? 'flex-end' : 'flex-start',
+          maxWidth: '70%',
+          minWidth: 0,
+          gap: 2,
+        }}
+      >
+        {/* Sender name + timestamp — theirs only, first of group */}
+        {!isGrouped && !isMine && (
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, paddingLeft: 4 }}>
             <span
               style={{
                 fontWeight: 'var(--font-weight-semibold)' as React.CSSProperties['fontWeight'],
                 color: 'var(--color-text-primary)',
-                fontSize: 'var(--font-size-base)',
+                fontSize: 'var(--font-size-sm)',
               }}
             >
               {message.sender.displayName}
@@ -93,27 +127,56 @@ export const MessageItem: React.FC<MessageItemProps> = React.memo(({
           </div>
         )}
 
-        {/* Reply-to preview */}
+        {/* Reply-to preview — rendered ABOVE the bubble as a separate floating quote */}
         {message.replyTo && (
           <div
             style={{
-              borderLeft: '3px solid var(--color-brand-primary)',
-              paddingLeft: 8,
-              marginBottom: 4,
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-text-muted)',
+              position: 'relative',
+              padding: '5px 10px 10px',
+              marginBottom: -6,
+              borderRadius: isMine ? '14px 14px 0 0' : '14px 14px 0 0',
+              background: isMine
+                ? 'rgba(0,0,0,0.22)'
+                : 'var(--color-surface-2)',
+              opacity: 0.75,
+              maxWidth: '100%',
+              overflow: 'hidden',
+              borderLeft: isMine ? 'none' : '2px solid rgba(47,129,247,0.5)',
+              borderRight: isMine ? '2px solid rgba(255,255,255,0.3)' : 'none',
             }}
           >
-            <strong>{message.replyTo.sender.displayName}</strong>
-            {' · '}
-            {message.replyTo.content.slice(0, 60)}
-            {message.replyTo.content.length > 60 && '…'}
+            <span
+              style={{
+                display: 'block',
+                fontSize: 'var(--font-size-xs)',
+                fontWeight: 'var(--font-weight-semibold)',
+                color: isMine ? 'rgba(255,255,255,0.6)' : 'var(--color-text-muted)',
+                marginBottom: 2,
+              }}
+            >
+              {message.replyTo.sender.displayName}
+            </span>
+            <span
+              style={{
+                display: 'block',
+                fontSize: 'var(--font-size-xs)',
+                color: isMine ? 'rgba(255,255,255,0.45)' : 'var(--color-text-muted)',
+                opacity: 0.8,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                fontStyle: 'italic',
+              }}
+            >
+              {message.replyTo.content.slice(0, 90)}
+              {message.replyTo.content.length > 90 && '…'}
+            </span>
           </div>
         )}
 
-        {/* Inline edit */}
+        {/* Bubble — inline edit or rendered text */}
         {isEditing ? (
-          <div>
+          <div style={{ width: '100%' }}>
             <textarea
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
@@ -124,7 +187,7 @@ export const MessageItem: React.FC<MessageItemProps> = React.memo(({
                 width: '100%',
                 background: 'var(--color-surface-0)',
                 border: '1px solid var(--color-brand-primary)',
-                borderRadius: 'var(--radius-sm)',
+                borderRadius: '8px',
                 padding: '6px 8px',
                 color: 'var(--color-text-primary)',
                 fontSize: 'var(--font-size-base)',
@@ -138,23 +201,34 @@ export const MessageItem: React.FC<MessageItemProps> = React.memo(({
             </p>
           </div>
         ) : (
-          <p
+          <div
+            onClick={() => !isEditing && setIsSelected((s) => !s)}
             style={{
-              margin: 0,
-              color: isFailed ? 'var(--color-danger)' : 'var(--color-text-primary)',
+              padding: '8px 12px',
+              borderRadius: message.replyTo
+                ? isMine ? '4px 18px 18px 18px' : '18px 4px 18px 18px'
+                : bubbleRadius,
+              background: isMine ? 'var(--color-brand-primary)' : 'var(--color-surface-3)',
+              color: isMine ? '#fff' : 'var(--color-text-primary)',
+              border: isFailed ? `1px solid var(--color-danger)` : '1px solid transparent',
               fontSize: 'var(--font-size-base)',
               lineHeight: 'var(--line-height-base)',
               wordBreak: 'break-word',
               whiteSpace: 'pre-wrap',
+              cursor: 'pointer',
+              userSelect: 'text',
+              outline: isSelected ? `2px solid ${isMine ? 'rgba(255,255,255,0.4)' : 'var(--color-brand-primary)'}` : 'none',
+              outlineOffset: 2,
+              transition: 'outline var(--transition-fast)',
             }}
           >
             {message.content}
-          </p>
+          </div>
         )}
 
         {/* Attachments */}
         {message.attachments.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 2 }}>
             {message.attachments.map((att) =>
               att.type === 'image' ? (
                 <img
@@ -166,11 +240,11 @@ export const MessageItem: React.FC<MessageItemProps> = React.memo(({
                   width={320}
                   height={240}
                   style={{
-                    maxWidth: 320,
-                    maxHeight: 240,
+                    maxWidth: 280,
+                    maxHeight: 200,
                     width: 'auto',
                     height: 'auto',
-                    borderRadius: 'var(--radius-md)',
+                    borderRadius: '12px',
                     objectFit: 'cover',
                     cursor: 'pointer',
                   }}
@@ -186,15 +260,16 @@ export const MessageItem: React.FC<MessageItemProps> = React.memo(({
                     alignItems: 'center',
                     gap: 8,
                     padding: '8px 12px',
-                    background: 'var(--color-surface-3)',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'var(--color-text-link)',
+                    background: isMine ? 'rgba(255,255,255,0.15)' : 'var(--color-surface-2)',
+                    borderRadius: '10px',
+                    color: isMine ? '#fff' : 'var(--color-text-link)',
                     fontSize: 'var(--font-size-sm)',
                     textDecoration: 'none',
+                    border: '1px solid rgba(255,255,255,0.1)',
                   }}
                 >
                   📎 {att.filename}
-                  <span style={{ color: 'var(--color-text-muted)' }}>
+                  <span style={{ color: isMine ? 'rgba(255,255,255,0.6)' : 'var(--color-text-muted)' }}>
                     {formatFileSize(att.size)}
                   </span>
                 </a>
@@ -203,44 +278,48 @@ export const MessageItem: React.FC<MessageItemProps> = React.memo(({
           </div>
         )}
 
-        {/* Status indicator for own messages */}
-        {isMine && (
-          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginTop: 2 }}>
-            {isFailed && (
-              <span style={{ color: 'var(--color-danger)' }}>
-                Failed to send · <button style={{ background: 'none', border: 'none', color: 'var(--color-text-link)', cursor: 'pointer', fontSize: 'inherit', padding: 0 }}>Retry</button>
-              </span>
-            )}
+        {/* Reactions — rendered directly below the bubble with negative margin to overlap the edge */}
+        {message.reactions.length > 0 && (
+          <div style={{ marginTop: -10, zIndex: 1, alignSelf: isMine ? 'flex-end' : 'flex-start' }}>
+            <ReactionBar
+              reactions={message.reactions}
+              onToggle={(emoji) => toggleReaction({ messageId: message.id, emoji })}
+            />
           </div>
         )}
 
-        {/* Reactions */}
-        <ReactionBar
-          reactions={message.reactions}
-          onToggle={(emoji) => toggleReaction({ messageId: message.id, emoji })}
-        />
-      </div>
+        {/* Timestamp (mine only — theirs is in the header row) */}
+        {isMine && !isGrouped && (
+          <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', paddingRight: 2 }}>
+            {formatTime(message.createdAt)}
+            {message.editedAt && ' (edited)'}
+          </span>
+        )}
 
-      {/* Hover actions — shown absolutely top-right */}
-      {isHovered && !isEditing && (
-        <div
-          style={{
-            position: 'absolute',
-            top: -18,
-            right: 16,
-            zIndex: 10,
-          }}
-        >
-          <MessageActions
-            message={message}
-            isMine={isMine}
-            onEdit={() => setIsEditing(true)}
-            onDelete={() => deleteMessage(message.id)}
-            onReact={(emoji) => toggleReaction({ messageId: message.id, emoji })}
-            onReply={() => onReply(message)}
-          />
-        </div>
-      )}
+        {/* Failed-to-send notice */}
+        {isMine && isFailed && (
+          <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-danger)' }}>
+            Failed to send ·{' '}
+            <button style={{ background: 'none', border: 'none', color: 'var(--color-text-link)', cursor: 'pointer', fontSize: 'inherit', padding: 0 }}>
+              Retry
+            </button>
+          </div>
+        )}
+
+        {/* Hover action bar — inline below the bubble, same alignment side */}
+        {isSelected && !isEditing && (
+          <div style={{ marginTop: 2 }}>
+            <MessageActions
+              message={message}
+              isMine={isMine}
+              onEdit={() => setIsEditing(true)}
+              onDelete={() => deleteMessage(message.id)}
+              onReact={(emoji) => toggleReaction({ messageId: message.id, emoji })}
+              onReply={() => onReply(message)}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 });

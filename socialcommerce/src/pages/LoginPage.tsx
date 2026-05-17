@@ -2,6 +2,9 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../app/providers/AuthProvider";
 import { useUIStore } from "../app/stores/uiStore";
+import { Icon } from "../shared/components/Icon";
+import { Sun, Moon, Sparkles, ShieldCheck, Zap, MessageSquare, Newspaper, Clapperboard, ShoppingBag } from "../shared/components/iconRegistry";
+import { GoogleIcon, MicrosoftIcon, FacebookIcon, AppleIcon } from "./providerIcons";
 import "./LoginPage.css";
 
 type Provider = "Google" | "Microsoft" | "Facebook" | "Apple";
@@ -9,30 +12,30 @@ type Provider = "Google" | "Microsoft" | "Facebook" | "Apple";
 const PROVIDERS: Array<{
     accent: string;
     description: string;
-    monogram: string;
+    ProviderIcon: React.FC<{ size?: number }>;
     name: Provider;
 }> = [
         {
             name: "Google",
-            monogram: "G",
+            ProviderIcon: GoogleIcon,
             accent: "#ea4335",
             description: "Gmail, Workspace, and Android identities",
         },
         {
             name: "Microsoft",
-            monogram: "M",
+            ProviderIcon: MicrosoftIcon,
             accent: "#3d7cff",
             description: "Microsoft 365, Outlook, and Entra accounts",
         },
         {
             name: "Facebook",
-            monogram: "f",
+            ProviderIcon: FacebookIcon,
             accent: "#1877f2",
             description: "Meta-connected profiles and community access",
         },
         {
             name: "Apple",
-            monogram: "A",
+            ProviderIcon: AppleIcon,
             accent: "#8e8e93",
             description: "Private Apple ID sign-in across your devices",
         },
@@ -46,10 +49,10 @@ const DESTINATIONS: Record<string, string> = {
 };
 
 const SURFACE_CARDS = [
-    { eyebrow: "Chat", title: "Pick up conversations without a second login." },
-    { eyebrow: "Shop", title: "Jump straight back into carts, orders, and listings." },
-    { eyebrow: "Share", title: "Move from groups to posts with the same session." },
-    { eyebrow: "Watch", title: "Rejoin streams and live chat with one account." },
+    { eyebrow: "Chat", title: "Pick up conversations without a second login.", icon: MessageSquare },
+    { eyebrow: "Shop", title: "Jump straight back into carts, orders, and listings.", icon: ShoppingBag },
+    { eyebrow: "Share", title: "Move from groups to posts with the same session.", icon: Newspaper },
+    { eyebrow: "Watch", title: "Rejoin streams and live chat with one account.", icon: Clapperboard },
 ];
 
 function getDestinationLabel(pathname: string) {
@@ -111,7 +114,7 @@ const LoginPage: React.FC = () => {
                 aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
                 onClick={toggleTheme}
             >
-                {theme === 'dark' ? '☀️' : '🌙'}
+                <Icon icon={theme === 'dark' ? Sun : Moon} size={18} />
             </button>
             <div className="login-page__orb login-page__orb--blue" aria-hidden="true" />
             <div className="login-page__orb login-page__orb--rose" aria-hidden="true" />
@@ -130,9 +133,9 @@ const LoginPage: React.FC = () => {
                     </p>
 
                     <div className="login-card__chips" aria-label="Sign-in highlights">
-                        <span className="login-chip">Soft session handoff</span>
-                        <span className="login-chip">Secure popup flow</span>
-                        <span className="login-chip">One account across domains</span>
+                        <span className="login-chip"><Icon icon={Sparkles} size={12} /> Soft session handoff</span>
+                        <span className="login-chip"><Icon icon={ShieldCheck} size={12} /> Secure popup flow</span>
+                        <span className="login-chip"><Icon icon={Zap} size={12} /> One account across domains</span>
                     </div>
 
                     <div className="login-card__providers">
@@ -154,7 +157,7 @@ const LoginPage: React.FC = () => {
                                     }
                                 >
                                     <span className="login-provider__badge" aria-hidden="true">
-                                        {provider.monogram}
+                                        <provider.ProviderIcon size={18} />
                                     </span>
 
                                     <span className="login-provider__content">
@@ -255,17 +258,20 @@ const LoginPage: React.FC = () => {
                     <div className="login-showcase__hero">
                         <span className="login-showcase__eyebrow">Shared identity</span>
                         <h2 className="login-showcase__title">
-                            A quieter, softer landing for the whole platform.
+                            One login. Every corner of the platform.
                         </h2>
                         <p className="login-showcase__copy">
-                            The login screen now leans into dark neomorphism with raised surfaces,
-                            inset panels, and gentle glow so sign-in feels calm instead of abrupt.
+                            Messages, storefronts, live streams, and social feeds — all under a
+                            single session. Switch without losing your place.
                         </p>
                     </div>
 
                     <div className="login-showcase__grid">
                         {SURFACE_CARDS.map((card) => (
                             <div key={card.eyebrow} className="login-showcase__tile">
+                                <span className="login-showcase__tile-icon" aria-hidden="true">
+                                    <Icon icon={card.icon} size={20} strokeWidth={1.5} />
+                                </span>
                                 <span className="login-showcase__tile-eyebrow">
                                     {card.eyebrow}
                                 </span>

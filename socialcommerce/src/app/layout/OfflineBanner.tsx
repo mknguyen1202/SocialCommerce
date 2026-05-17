@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { Icon } from '../../shared/components/Icon';
+import { WifiOff } from '../../shared/components/iconRegistry';
 
 export const OfflineBanner: React.FC = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -31,7 +33,7 @@ export const OfflineBanner: React.FC = () => {
         zIndex: 'var(--z-toast)' as unknown as number,
       }}
     >
-      🌐 You are offline. Some features may be unavailable.
+      <Icon icon={WifiOff} size={16} style={{ flexShrink: 0 }} /> You are offline. Some features may be unavailable.
     </div>
   );
 };

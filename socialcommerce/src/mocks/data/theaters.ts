@@ -73,6 +73,32 @@ export const THEATERS = [
         ended_at: ago(6, 21),
         created_at: ago(8),
     },
+    {
+        id: 'thtr-4',
+        host_id: u('usr-5').id,
+        host_username: u('usr-5').username,
+        host_display_name: u('usr-5').display_name,
+        host_avatar_url: u('usr-5').avatar_url,
+        title: 'Big Buck Bunny — Community Movie Night 🐰',
+        description:
+            'Watching the classic open-source short film together. ' +
+            'Chat and react live! Hosted by the Creative Commons crew.',
+        category: 'Entertainment',
+        tags: ['movie', 'animation', 'community', 'open-source'],
+        visibility: 'public',
+        status: 'live',
+        // Big Buck Bunny — royalty-free sample MP4 from Google's media CDN.
+        // Works in any browser; ~158 MB but streams progressively so it starts immediately.
+        content_source_type: 'external_url',
+        content_source_url: '/Big_Buck_Bunny_1080_10s_30MB.mp4',
+        content_source_media_id: undefined as string | undefined,
+        viewer_count: 87,
+        max_viewers: undefined as number | undefined,
+        scheduled_at: undefined as string | undefined,
+        started_at: ago(0, 0),
+        ended_at: undefined as string | undefined,
+        created_at: ago(0, 1),
+    },
 ];
 
 export const THEATER_PARTICIPANTS: Record<string, unknown[]> = {
@@ -107,4 +133,33 @@ export const THEATER_PARTICIPANTS: Record<string, unknown[]> = {
     ],
     'thtr-2': [],
     'thtr-3': [],
+    'thtr-4': [
+        {
+            user_id: u('usr-5').id,
+            user_username: u('usr-5').username,
+            user_display_name: u('usr-5').display_name,
+            user_avatar_url: u('usr-5').avatar_url,
+            role: 'host',
+            joined_at: ago(0, 0),
+            is_chat_muted: false,
+        },
+        {
+            user_id: u('usr-1').id,
+            user_username: u('usr-1').username,
+            user_display_name: u('usr-1').display_name,
+            user_avatar_url: u('usr-1').avatar_url,
+            role: 'viewer',
+            joined_at: ago(0, 0),
+            is_chat_muted: false,
+        },
+        {
+            user_id: u('usr-3').id,
+            user_username: u('usr-3').username,
+            user_display_name: u('usr-3').display_name,
+            user_avatar_url: u('usr-3').avatar_url,
+            role: 'viewer',
+            joined_at: ago(0, 0),
+            is_chat_muted: false,
+        },
+    ],
 };

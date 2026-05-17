@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Icon } from '../../../shared/components/Icon';
+import { Search, X } from '../../../shared/components/iconRegistry';
 import { useCommerceStore } from '../stores/commerceStore';
 
 export const SearchBar: React.FC = () => {
@@ -29,9 +31,10 @@ export const SearchBar: React.FC = () => {
     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
       <span style={{
         position: 'absolute', left: 10,
-        color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)', pointerEvents: 'none',
+        color: 'var(--color-text-muted)', pointerEvents: 'none',
+        display: 'flex', alignItems: 'center',
       }}>
-        🔍
+        <Icon icon={Search} size={14} />
       </span>
       <input
         type="search"

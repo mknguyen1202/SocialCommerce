@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from 'react';
-import { NavLink, Routes, Route, Navigate } from 'react-router-dom';
+import { NavLink, Routes, Route, Navigate, useMatch } from 'react-router-dom';
+import { SellerLayout } from './Seller/SellerLayout';
 import { useCommerceStore } from './stores/commerceStore';
 import { useIsMobile } from '../../shared/hooks/useIsMobile';
 import { ProductGrid } from './Browse/ProductGrid';
@@ -15,6 +16,7 @@ const MiniCart = lazy(() => import('./Cart/MiniCart').then(m => ({ default: m.Mi
 const CheckoutPage = lazy(() => import('./Checkout/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
 const OrderHistory = lazy(() => import('./Orders/OrderHistory').then(m => ({ default: m.OrderHistory })));
 const OrderDetail = lazy(() => import('./Orders/OrderDetail').then(m => ({ default: m.OrderDetail })));
+const ShopPage = lazy(() => import('./Browse/ShopPage').then(m => ({ default: m.ShopPage })));
 
 const RouteFallback = () => (
 	<div style={{ padding: 'var(--space-6)', maxWidth: 760, margin: '0 auto' }}>
@@ -27,6 +29,7 @@ const SIDEBAR_WIDTH = 220;
 export const CommerceLayout: React.FC = () => {
 	const isMobile = useIsMobile();
 	const { cart, isMiniCartOpen, openMiniCart } = useCommerceStore();
+	const isSellerRoute = !!useMatch('/commerce/seller/*');
 
 	const navLinkStyle = ({ isActive }: { isActive: boolean }): React.CSSProperties => ({
 		display: 'flex',
@@ -60,6 +63,18 @@ export const CommerceLayout: React.FC = () => {
 		border: `1px solid ${isActive ? 'var(--color-border-default)' : 'transparent'}`,
 		transition: 'background var(--transition-fast)',
 	});
+
+	if (isSellerRoute) {
+		// Must render inside Routes so SellerLayout's nested <Routes> gets the
+		// correct route context (basePath = /commerce/seller, remaining = "dashboard" etc.)
+		// A bare return <SellerLayout /> bypasses the Routes, causing SellerRoutes to
+		// see "seller/dashboard" instead of just "dashboard" → nothing matches.
+		return (
+			<Routes>
+				<Route path="seller/*" element={<SellerLayout />} />
+			</Routes>
+		);
+	}
 
 	return (
 		<div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
@@ -145,7 +160,8 @@ export const CommerceLayout: React.FC = () => {
 						<Route path="checkout" element={<Suspense fallback={<RouteFallback />}><CheckoutPage /></Suspense>} />
 						<Route path="orders" element={<Suspense fallback={<RouteFallback />}><OrderHistory /></Suspense>} />
 						<Route path="orders/:id" element={<Suspense fallback={<RouteFallback />}><OrderDetail /></Suspense>} />
-						<Route path="seller/*" element={<SellerPlaceholder />} />
+						<Route path="shop/:slug" element={<Suspense fallback={<RouteFallback />}><ShopPage /></Suspense>} />
+						<Route path="seller/*" element={<SellerLayout />} />
 						<Route path="*" element={<Navigate to="/commerce" replace />} />
 					</Routes>
 				</div>
@@ -161,9 +177,4 @@ export const CommerceLayout: React.FC = () => {
 	);
 };
 
-// Placeholder to be replaced by Phase 5 SellerLayout
-const SellerPlaceholder: React.FC = () => (
-	<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-text-muted)' }}>
-		<p>Seller dashboard loading…</p>
-	</div>
-);
+

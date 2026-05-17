@@ -1,5 +1,7 @@
 import React from 'react';
 import { Button } from './Button';
+import { Icon } from './Icon';
+import { AlertTriangle } from './iconRegistry';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -45,7 +47,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             textAlign: 'center',
           }}
         >
-          <span style={{ fontSize: 48 }} aria-hidden="true">⚠️</span>
+          <span style={{ display: 'flex', justifyContent: 'center', opacity: 0.6 }} aria-hidden="true">
+            <Icon icon={AlertTriangle} size={48} />
+          </span>
           <h2
             style={{
               fontSize: 'var(--font-size-lg)',

@@ -16,11 +16,7 @@
   --color-surface-3: #2b2d31;
   /* card bg — use neu-raised shadow instead */
 
-  /* --- Breakpoints (min-width reference values — see layout @media blocks) --- */
-  --bp-sm: 480px;
-  --bp-md: 768px;
-  --bp-lg: 1024px;
-  --bp-xl: 1280px;
+  /* --- Breakpoints (min-width reference values — see @custom-media below) --- */
 
   /* --- Nav rail --- */
   --nav-rail-width: 0px;
@@ -140,7 +136,7 @@
   /* --- Nav rail --- */
   --color-nav-bg: #e8eaed;
   --color-nav-icon: #4e5058;
-  --color-nav-icon-active: #ffffff;
+  --color-nav-icon-active: #5865f2;
 
   /* --- Top bar --- */
   --color-topbar-bg: #e8eaed;
@@ -168,8 +164,14 @@
   --neu-inset-sm: inset 2px 2px 5px var(--neu-dark), inset -2px -2px 5px var(--neu-light);
 }
 
+/* ── Breakpoint definitions ────────────────────────────────── */
+@custom-media --bp-sm (min-width: 480px);
+@custom-media --bp-md (min-width: 768px);
+@custom-media --bp-lg (min-width: 1024px);
+@custom-media --bp-xl (min-width: 1280px);
+
 /* ── Layout breakpoints — sm / md / lg / xl ────────────────── */
-@media (min-width: 480px) {
+@media (--bp-sm) {
   :root {
     --nav-rail-width: 52px;
     --layout-panel-width: 320px;
@@ -177,7 +179,7 @@
   }
 }
 
-@media (min-width: 768px) {
+@media (--bp-md) {
   :root {
     --nav-rail-width: 60px;
     --layout-sidebar-width: 200px;
@@ -189,7 +191,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (--bp-lg) {
   :root {
     --nav-rail-width: 72px;
     --layout-sidebar-width: 220px;
@@ -200,7 +202,7 @@
   }
 }
 
-@media (min-width: 1280px) {
+@media (--bp-xl) {
   :root {
     --nav-rail-width: 72px;
     --layout-sidebar-width: 260px;

@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Icon } from '../../../shared/components/Icon';
+import { ShoppingCart } from '../../../shared/components/iconRegistry';
 import { useCommerceStore } from '../stores/commerceStore';
 import { CartItem } from './CartItem';
 import { CartSummary } from './CartSummary';
@@ -22,7 +24,7 @@ export const CartPage: React.FC = () => {
 
         {cart.items.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-4)', paddingTop: 80, color: 'var(--color-text-muted)' }}>
-            <span style={{ fontSize: 64 }}>🛒</span>
+            <span style={{ opacity: 0.5, display: 'flex' }}><Icon icon={ShoppingCart} size={64} /></span>
             <p style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Your cart is empty.</p>
             <Button onClick={() => navigate('/commerce')}>Browse Products</Button>
           </div>

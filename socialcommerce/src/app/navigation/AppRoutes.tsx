@@ -10,6 +10,8 @@ const CommunicationDomain = lazy(() => import('../../domains/communication'));
 const SocialDomain = lazy(() => import('../../domains/social'));
 const StreamingDomain = lazy(() => import('../../domains/streaming'));
 const CommerceDomain = lazy(() => import('../../domains/commerce'));
+const ProfilePage = lazy(() => import('../../pages/ProfilePage'));
+const SettingsPage = lazy(() => import('../../pages/SettingsPage'));
 
 const DomainFallback: React.FC = () => (
   <div style={{ flex: 1, padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
@@ -68,6 +70,27 @@ export const AppRoutes: React.FC = () => (
           <ErrorBoundary>
             <Suspense fallback={<DomainFallback />}>
               <CommerceDomain />
+            </Suspense>
+          </ErrorBoundary>
+        }
+      />
+
+      <Route
+        path="profile"
+        element={
+          <ErrorBoundary>
+            <Suspense fallback={<DomainFallback />}>
+              <ProfilePage />
+            </Suspense>
+          </ErrorBoundary>
+        }
+      />
+      <Route
+        path="settings/*"
+        element={
+          <ErrorBoundary>
+            <Suspense fallback={<DomainFallback />}>
+              <SettingsPage />
             </Suspense>
           </ErrorBoundary>
         }

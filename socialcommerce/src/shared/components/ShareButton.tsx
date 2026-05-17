@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useCrossDomainNav } from '../hooks/useCrossDomainNav';
+import { Icon } from './Icon';
+import { ArrowUpRight, Newspaper, Clapperboard, Link2, CheckCircle2 } from './iconRegistry';
 import type { Money } from '../types/domain';
 
 export interface ShareButtonProps {
@@ -123,7 +125,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
         onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = 'var(--color-surface-4, var(--color-surface-3))')}
         onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'var(--color-surface-3)')}
       >
-        <span>↗️</span>
+        <Icon icon={ArrowUpRight} size={14} />
         <span>Share</span>
       </button>
 
@@ -151,7 +153,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
             onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = 'var(--color-surface-3)')}
             onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'none')}
           >
-            <span>📰</span>
+            <Icon icon={Newspaper} size={14} />
             <span>Share to Social Feed</span>
           </button>
 
@@ -164,7 +166,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
               onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = 'var(--color-surface-3)')}
               onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'none')}
             >
-              <span>🎬</span>
+              <Icon icon={Clapperboard} size={14} />
               <span>Promote in Theater</span>
             </button>
           )}
@@ -186,7 +188,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
             onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = 'var(--color-surface-3)')}
             onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'none')}
           >
-            <span>{copied ? '✅' : '🔗'}</span>
+            <Icon icon={copied ? CheckCircle2 : Link2} size={14} />
             <span>{copied ? 'Copied!' : 'Copy link'}</span>
           </button>
         </div>

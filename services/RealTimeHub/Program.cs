@@ -10,13 +10,25 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHubJwtAuth(builder.Configuration);
 builder.Services.AddAuthorization();
 
-// ── SignalR + Redis backplane ──────────────────────────────────────────────────
-string redisConn = builder.Configuration["Redis:Connection"] ?? "localhost:6379,abortConnect=false";
-builder.Services.AddSignalR()
-    .AddStackExchangeRedis(redisConn, opts =>
+// ── SignalR + backplane ───────────────────────────────────────────────────────
+// Use Azure SignalR Service when a connection string is configured (production).
+// Fall back to Redis (local dev / docker-compose) otherwise.
+string? azureSignalRConn = builder.Configuration["Azure:SignalR:ConnectionString"];
+
+ISignalRServerBuilder signalRBuilder = builder.Services.AddSignalR();
+
+if (!string.IsNullOrWhiteSpace(azureSignalRConn))
+{
+    signalRBuilder.AddAzureSignalR(azureSignalRConn);
+}
+else
+{
+    string redisConn = builder.Configuration["Redis:Connection"] ?? "localhost:6379,abortConnect=false";
+    signalRBuilder.AddStackExchangeRedis(redisConn, opts =>
     {
         opts.Configuration.ChannelPrefix = global::StackExchange.Redis.RedisChannel.Literal("sc-rt");
     });
+}
 
 // Custom IUserIdProvider: maps "uid" claim → SignalR user identifier
 builder.Services.AddSingleton<IUserIdProvider, UidUserIdProvider>();

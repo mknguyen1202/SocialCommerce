@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Avatar } from '../../shared/components/Avatar';
 import { Badge } from '../../shared/components/Badge';
 import { Dropdown } from '../../shared/components/Dropdown';
+import { Icon } from '../../shared/components/Icon';
+import { Menu, Search, Sun, Moon, Bell, LogOut, User, Settings } from '../../shared/components/iconRegistry';
 import { UnifiedSearch } from './UnifiedSearch';
 import { useUIStore } from '../stores/uiStore';
 import { useAuthContext } from '../providers/AuthProvider';
@@ -9,10 +12,10 @@ import { useIsMobile } from '../../shared/hooks/useIsMobile';
 
 export const TopBar: React.FC = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const {
     isNotificationPanelOpen,
     toggleNotificationPanel,
-    toggleProfilePanel,
     openNavDrawer,
     unreadCounts,
     theme,
@@ -78,7 +81,7 @@ export const TopBar: React.FC = () => {
             onMouseEnter={hoverIcon}
             onMouseLeave={unhoverIcon}
           >
-            ☰
+            <Icon icon={Menu} size={18} />
           </button>
         )}
 
@@ -92,7 +95,7 @@ export const TopBar: React.FC = () => {
             onMouseEnter={hoverIcon}
             onMouseLeave={unhoverIcon}
           >
-            🔍
+            <Icon icon={Search} size={18} />
           </button>
 
           {/* Theme toggle — desktop only; available in nav drawer on mobile */}
@@ -104,7 +107,7 @@ export const TopBar: React.FC = () => {
               onMouseEnter={hoverIcon}
               onMouseLeave={unhoverIcon}
             >
-              {theme === 'dark' ? '☀️' : '🌙'}
+              <Icon icon={theme === 'dark' ? Sun : Moon} size={18} />
             </button>
           )}
 
@@ -117,7 +120,7 @@ export const TopBar: React.FC = () => {
             onMouseEnter={hoverIcon}
             onMouseLeave={unhoverIcon}
           >
-            🔔
+            <Icon icon={Bell} size={18} />
             {totalUnread > 0 && (
               <Badge
                 count={totalUnread}
@@ -137,7 +140,6 @@ export const TopBar: React.FC = () => {
             trigger={
               <button
                 aria-label="Profile menu"
-                onClick={toggleProfilePanel}
                 style={{
                   background: 'transparent',
                   border: '1px solid var(--color-border-default)',
@@ -149,7 +151,7 @@ export const TopBar: React.FC = () => {
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border-emphasis)'; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border-default)'; }}
               >
-                <Avatar initials={initials} size="sm" />
+                <Avatar src={user?.avatarUrl} initials={initials} size="sm" />
               </button>
             }
             items={[
@@ -160,16 +162,32 @@ export const TopBar: React.FC = () => {
               },
               {
                 key: 'profile',
-                label: 'My Profile',
-                onClick: toggleProfilePanel,
+                label: (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    <Icon icon={User} size={14} />
+                    My Profile
+                  </span>
+                ),
+                onClick: () => navigate('/profile'),
               },
               {
                 key: 'settings',
-                label: 'Settings',
+                label: (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    <Icon icon={Settings} size={14} />
+                    Settings
+                  </span>
+                ),
+                onClick: () => navigate('/settings'),
               },
               {
                 key: 'logout',
-                label: 'Sign Out',
+                label: (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    <Icon icon={LogOut} size={14} />
+                    Sign Out
+                  </span>
+                ),
                 danger: true,
                 onClick: () => void logout(),
               },

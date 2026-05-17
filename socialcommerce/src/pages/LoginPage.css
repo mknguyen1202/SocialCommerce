@@ -1,6 +1,5 @@
 /* ==========================================================================
-   Login Page — Reddit / GitHub flat style
-   Neomorphism backup: LoginPage.neu.css (swap imports to restore)
+   Login Page — Reddit / GitHub flat style  (refreshed)
    ========================================================================== */
 
 .login-page {
@@ -15,8 +14,49 @@
 	color: var(--color-text-primary);
 }
 
+/* ── Decorative ambient orbs ─────────────────────────────────── */
+
 .login-page__orb {
-	display: none;
+	position: absolute;
+	border-radius: 50%;
+	pointer-events: none;
+	opacity: 0.15;
+	filter: blur(80px);
+	animation: login-drift 14s ease-in-out infinite alternate;
+}
+
+.login-page__orb--blue {
+	width: 480px;
+	height: 480px;
+	top: -120px;
+	right: -80px;
+	background: var(--color-brand-primary);
+	animation-delay: 0s;
+}
+
+.login-page__orb--rose {
+	width: 360px;
+	height: 360px;
+	bottom: -80px;
+	left: -60px;
+	background: var(--color-brand-secondary);
+	animation-delay: -7s;
+}
+
+@keyframes login-drift {
+	from {
+		transform: translate(0, 0) scale(1);
+	}
+
+	to {
+		transform: translate(40px, -30px) scale(1.08);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.login-page__orb {
+		animation: none;
+	}
 }
 
 .login-page__shell {
@@ -50,6 +90,20 @@
 	justify-content: space-between;
 	gap: var(--space-8);
 	animation: login-rise 500ms ease both;
+	position: relative;
+	overflow: hidden;
+}
+
+/* Gradient accent bar on the showcase (top edge) */
+.login-showcase::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: linear-gradient(90deg, var(--color-brand-primary), var(--color-brand-secondary));
+	border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .login-card__eyebrow,
@@ -102,6 +156,9 @@
 	background: var(--color-surface-3);
 	border: 1px solid var(--color-border-muted);
 	font-size: var(--font-size-xs);
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
 }
 
 .login-card__providers {
@@ -253,11 +310,24 @@
 	border-radius: var(--radius-md);
 	background: var(--color-surface-3);
 	border: 1px solid var(--color-border-muted);
+	transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.login-showcase__tile:hover {
+	border-color: var(--color-border-default);
+	background: var(--color-surface-2);
+}
+
+.login-showcase__tile-icon {
+	display: flex;
+	align-items: center;
+	margin-bottom: var(--space-2);
+	color: var(--color-text-muted);
 }
 
 .login-showcase__tile-eyebrow {
-	display: inline-flex;
-	margin-bottom: var(--space-2);
+	display: block;
+	margin-bottom: var(--space-1);
 	color: var(--color-text-muted);
 }
 
@@ -310,6 +380,32 @@
 	.login-fallback__links,
 	.login-showcase__grid {
 		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 480px) {
+	.login-page {
+		padding: 12px;
+		align-items: flex-start;
+		padding-top: 24px;
+	}
+
+	.login-card__title,
+	.login-showcase__title {
+		font-size: 1.5rem;
+	}
+
+	.login-page__theme-toggle {
+		top: 12px;
+		right: 12px;
+	}
+
+	.login-card__providers {
+		gap: var(--space-2);
+	}
+
+	.login-provider {
+		padding: 10px 12px;
 	}
 }
 

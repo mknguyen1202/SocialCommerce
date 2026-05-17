@@ -22,11 +22,7 @@
   --color-border-muted: #21262d;
   --color-border-emphasis: #484f58;
 
-  /* --- Breakpoints (min-width reference values — see layout @media blocks) --- */
-  --bp-sm: 480px;
-  --bp-md: 768px;
-  --bp-lg: 1024px;
-  --bp-xl: 1280px;
+  /* --- Breakpoints (min-width reference values — see @custom-media below) --- */
 
   /* --- Nav rail --- */
   --nav-rail-width: 0px;
@@ -149,7 +145,7 @@
   /* --- Nav rail --- */
   --color-nav-bg: #f6f8fa;
   --color-nav-icon: #656d76;
-  --color-nav-icon-active: #ffffff;
+  --color-nav-icon-active: #0969da;
 
   /* --- Top bar --- */
   --color-topbar-bg: #fff9f9;
@@ -187,8 +183,14 @@
   --neu-inset-sm: none;
 }
 
+/* ── Breakpoint definitions ────────────────────────────────── */
+@custom-media --bp-sm (min-width: 480px);
+@custom-media --bp-md (min-width: 768px);
+@custom-media --bp-lg (min-width: 1024px);
+@custom-media --bp-xl (min-width: 1280px);
+
 /* ── Layout breakpoints — sm / md / lg / xl ────────────────── */
-@media (min-width: 480px) {
+@media (--bp-sm) {
   :root {
     --nav-rail-width: 48px;
     --layout-panel-width: 320px;
@@ -196,7 +198,7 @@
   }
 }
 
-@media (min-width: 768px) {
+@media (--bp-md) {
   :root {
     --nav-rail-width: 52px;
     --layout-sidebar-width: 200px;
@@ -208,7 +210,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (--bp-lg) {
   :root {
     --nav-rail-width: 64px;
     --layout-sidebar-width: 220px;
@@ -219,7 +221,7 @@
   }
 }
 
-@media (min-width: 1280px) {
+@media (--bp-xl) {
   :root {
     --nav-rail-width: 64px;
     --layout-sidebar-width: 260px;

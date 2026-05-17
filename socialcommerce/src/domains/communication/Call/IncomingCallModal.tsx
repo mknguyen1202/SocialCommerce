@@ -3,6 +3,8 @@ import { useCallStore } from '../stores/callStore';
 import { UserAvatar } from '../shared/UserAvatar';
 import { useSocket } from '../../../shared/realtime/useSocket';
 import { Button } from '../../../shared/components/Button';
+import { Icon } from '../../../shared/components/Icon';
+import { PhoneOff, Phone, Video } from '../../../shared/components/iconRegistry';
 
 export const IncomingCallModal: React.FC = () => {
   const { incomingCall, setActiveCall, setIncomingCall } = useCallStore();
@@ -68,9 +70,9 @@ export const IncomingCallModal: React.FC = () => {
           variant="danger"
           onClick={decline}
           aria-label="Decline call"
-          style={{ borderRadius: 'var(--radius-full)', width: 52, height: 52, justifyContent: 'center', fontSize: 22 }}
+          style={{ borderRadius: 'var(--radius-full)', width: 52, height: 52, justifyContent: 'center' }}
         >
-          📵
+          <Icon icon={PhoneOff} size={22} />
         </Button>
         <Button
           variant="primary"
@@ -81,11 +83,10 @@ export const IncomingCallModal: React.FC = () => {
             width: 52,
             height: 52,
             justifyContent: 'center',
-            fontSize: 22,
             background: 'var(--color-success)',
           }}
         >
-          {incomingCall.type === 'video' ? '📹' : '📞'}
+          <Icon icon={incomingCall.type === 'video' ? Video : Phone} size={22} />
         </Button>
       </div>
     </div>

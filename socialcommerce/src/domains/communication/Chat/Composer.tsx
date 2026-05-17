@@ -1,6 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react';
 import type { DomainMessage } from '../../../shared/types/domain';
 import { useTypingEmitter } from '../hooks/useTypingIndicator';
+import { Icon } from '../../../shared/components/Icon';
+import { X, CornerUpLeft } from '../../../shared/components/iconRegistry';
 
 interface ComposerProps {
   conversationId: string;
@@ -77,29 +79,47 @@ export const Composer: React.FC<ComposerProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '6px 10px',
+            gap: 8,
+            padding: '7px 10px',
             marginBottom: 6,
-            background: 'var(--color-surface-3)',
-            borderRadius: 'var(--radius-sm)',
+            background: 'color-mix(in srgb, var(--color-brand-primary) 10%, var(--color-surface-3))',
+            borderRadius: 'var(--radius-md)',
             borderLeft: '3px solid var(--color-brand-primary)',
-            fontSize: 'var(--font-size-sm)',
           }}
         >
-          <span style={{ color: 'var(--color-text-muted)' }}>
-            Replying to{' '}
-            <strong style={{ color: 'var(--color-text-primary)' }}>
+          <Icon icon={CornerUpLeft} size={14} color="var(--color-brand-primary)" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 'var(--font-size-xs)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--color-brand-primary)', marginBottom: 1 }}>
               {replyTo.sender.displayName}
-            </strong>
-            {': '}
-            <span>{replyTo.content.slice(0, 60)}{replyTo.content.length > 60 && '…'}</span>
-          </span>
+            </div>
+            <div
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-text-muted)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {replyTo.content.slice(0, 80)}{replyTo.content.length > 80 && '…'}
+            </div>
+          </div>
           <button
             aria-label="Cancel reply"
             onClick={onCancelReply}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 16 }}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--color-text-muted)',
+              display: 'flex',
+              alignItems: 'center',
+              padding: 2,
+              borderRadius: 'var(--radius-sm)',
+              flexShrink: 0,
+            }}
           >
-            ✕
+            <Icon icon={X} size={15} />
           </button>
         </div>
       )}

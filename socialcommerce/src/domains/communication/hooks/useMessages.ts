@@ -121,7 +121,11 @@ export function useSendMessage(conversationId: string) {
 
   return useMutation({
     mutationFn: (payload: { content: string; replyToId?: string; attachmentIds?: string[] }) =>
-      apiPost<MessageDTO>(`/conversations/${conversationId}/messages`, payload),
+      apiPost<MessageDTO>(`/conversations/${conversationId}/messages`, {
+        content: payload.content,
+        reply_to_id: payload.replyToId,
+        attachment_ids: payload.attachmentIds,
+      }),
 
     onMutate: async (payload) => {
       const tempId = `temp-${Date.now()}`;
@@ -131,6 +135,15 @@ export function useSendMessage(conversationId: string) {
       const previous = qc.getQueryData<InfiniteData<Paginated<DomainMessage>>>(
         messagesKey(conversationId)
       );
+
+      // Resolve the replyTo message from the existing cache for optimistic display
+      let replyTo: DomainMessage['replyTo'] | undefined;
+      if (payload.replyToId) {
+        const cached = previous?.pages.flatMap((p) => p.items).find((m) => m.id === payload.replyToId);
+        if (cached) {
+          replyTo = { id: cached.id, content: cached.content, sender: cached.sender };
+        }
+      }
 
       const optimisticMessage: DomainMessage = {
         id: tempId,
@@ -146,6 +159,7 @@ export function useSendMessage(conversationId: string) {
         content: payload.content,
         attachments: [],
         reactions: [],
+        replyTo,
         status: 'sending',
         createdAt: new Date(),
       };
@@ -238,8 +252,75 @@ export function useDeleteMessage(conversationId: string) {
 }
 
 export function useToggleReaction(conversationId: string) {
+  const qc = useQueryClient();
+  const { user } = useAuthContext();
+
   return useMutation({
     mutationFn: ({ messageId, emoji }: { messageId: string; emoji: string }) =>
       apiPost(`/conversations/${conversationId}/messages/${messageId}/reactions`, { emoji }),
+
+    onMutate: async ({ messageId, emoji }) => {
+      await qc.cancelQueries({ queryKey: messagesKey(conversationId) });
+      const previous = qc.getQueryData<InfiniteData<Paginated<DomainMessage>>>(
+        messagesKey(conversationId)
+      );
+
+      const userId = user?.id ?? '';
+
+      qc.setQueryData<InfiniteData<Paginated<DomainMessage>>>(
+        messagesKey(conversationId),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              items: page.items.map((m) => {
+                if (m.id !== messageId) return m;
+                const existing = m.reactions.find((r) => r.emoji === emoji);
+                let reactions: DomainMessage['reactions'];
+                if (existing) {
+                  const alreadyMine = existing.userIds.includes(userId);
+                  if (alreadyMine) {
+                    // Toggle off — remove this user
+                    const newUserIds = existing.userIds.filter((id) => id !== userId);
+                    reactions = newUserIds.length === 0
+                      ? m.reactions.filter((r) => r.emoji !== emoji)
+                      : m.reactions.map((r) =>
+                          r.emoji === emoji
+                            ? { ...r, userIds: newUserIds, count: newUserIds.length }
+                            : r
+                        );
+                  } else {
+                    // Add to existing emoji bucket
+                    reactions = m.reactions.map((r) =>
+                      r.emoji === emoji
+                        ? { ...r, userIds: [...r.userIds, userId], count: r.count + 1 }
+                        : r
+                    );
+                  }
+                } else {
+                  // Brand-new emoji for this message
+                  reactions = [...m.reactions, { emoji, userIds: [userId], count: 1 }];
+                }
+                return { ...m, reactions };
+              }),
+            })),
+          };
+        }
+      );
+
+      return { previous };
+    },
+
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) {
+        qc.setQueryData(messagesKey(conversationId), ctx.previous);
+      }
+    },
+
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: messagesKey(conversationId) });
+    },
   });
 }

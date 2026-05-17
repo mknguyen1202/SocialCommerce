@@ -97,11 +97,21 @@ export const MESSAGES: Record<string, ReturnType<typeof msg>[]> = {
         msg('msg-1-2', 'conv-1', 'usr-2', 'Not yet, been swamped. What\'s the TL;DR?', 3, 0, 5),
         msg('msg-1-3', 'conv-1', 'usr-1', 'It\'s about using service workers to mock API calls in dev — basically how to build a frontend before the backend exists.', 3, 0, 7),
         msg('msg-1-4', 'conv-1', 'usr-2', 'Oh interesting. Does it work with React Query?', 3, 0, 10),
-        msg('msg-1-5', 'conv-1', 'usr-1', 'Yep, perfectly. MSW intercepts at the network level so your hooks have no idea they\'re talking to a mock.', 3, 0, 12),
+        {
+            ...msg('msg-1-5', 'conv-1', 'usr-1', 'Yep, perfectly. MSW intercepts at the network level so your hooks have no idea they\'re talking to a mock.', 3, 0, 12),
+            reply_to_id: 'msg-1-4',
+            reply_to_content: 'Oh interesting. Does it work with React Query?',
+            reply_to_sender_name: u('usr-2').display_name,
+        },
         msg('msg-1-6', 'conv-1', 'usr-2', 'That sounds way cleaner than mocking the whole fetch function.', 2),
         msg('msg-1-7', 'conv-1', 'usr-1', 'Exactly. And moving to the real backend later is just removing the handlers one by one.', 2, 0, 1),
         msg('msg-1-8', 'conv-1', 'usr-2', 'Sold. I\'ll set it up this weekend.', 1),
-        msg('msg-1-9', 'conv-1', 'usr-1', 'Nice! I\'ll send you the quickstart link.', 0, 3),
+        {
+            ...msg('msg-1-9', 'conv-1', 'usr-1', 'Nice! I\'ll send you the quickstart link.', 0, 3),
+            reply_to_id: 'msg-1-8',
+            reply_to_content: 'Sold. I\'ll set it up this weekend.',
+            reply_to_sender_name: u('usr-2').display_name,
+        },
         msg('msg-1-10', 'conv-1', 'usr-2', 'Let me know what you think once you\'ve had a chance to read it!', 0, 2),
     ],
     'conv-2': [

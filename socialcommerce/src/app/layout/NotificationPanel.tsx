@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useUIStore } from '../stores/uiStore';
 import { Skeleton } from '../../shared/components/Skeleton';
 import { Avatar } from '../../shared/components/Avatar';
+import { Icon } from '../../shared/components/Icon';
+import { MessageSquare, Newspaper, Clapperboard, ShoppingBag, Bell, X } from '../../shared/components/iconRegistry';
+import type { LucideIcon } from 'lucide-react';
 import {
   useNotifications,
   useMarkNotificationRead,
@@ -17,11 +20,11 @@ const DOMAIN_COLOR: Record<NotificationDomain, string> = {
   commerce: 'var(--color-warning)',
 };
 
-const DOMAIN_ICON: Record<NotificationDomain, string> = {
-  communication: '💬',
-  social: '📰',
-  streaming: '🎬',
-  commerce: '🛒',
+const DOMAIN_ICON: Record<NotificationDomain, LucideIcon> = {
+  communication: MessageSquare,
+  social: Newspaper,
+  streaming: Clapperboard,
+  commerce: ShoppingBag,
 };
 
 function formatTimeAgo(date: Date): string {
@@ -82,10 +85,10 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onRea
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 18,
+              color: '#fff',
             }}
           >
-            {DOMAIN_ICON[notification.domain]}
+            <Icon icon={DOMAIN_ICON[notification.domain]} size={16} />
           </div>
         )}
         <span
@@ -94,11 +97,17 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onRea
             position: 'absolute',
             bottom: -2,
             right: -2,
-            fontSize: 11,
-            lineHeight: 1,
+            width: 14,
+            height: 14,
+            borderRadius: '50%',
+            background: DOMAIN_COLOR[notification.domain],
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#fff',
           }}
         >
-          {DOMAIN_ICON[notification.domain]}
+          <Icon icon={DOMAIN_ICON[notification.domain]} size={8} strokeWidth={2.5} />
         </span>
       </div>
 
@@ -263,13 +272,17 @@ export const NotificationPanel: React.FC = () => {
                 border: 'none',
                 color: 'var(--color-text-secondary)',
                 cursor: 'pointer',
-                fontSize: 18,
-                borderRadius: 'var(--radius-sm)',
-                padding: 4,
-              }}
-            >
-              ✕
-            </button>
+                display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 28,
+              height: 28,
+              borderRadius: 'var(--radius-sm)',
+              padding: 4,
+            }}
+          >
+            <Icon icon={X} size={16} />
+          </button>
           </div>
         </div>
 
@@ -294,7 +307,7 @@ export const NotificationPanel: React.FC = () => {
                 fontSize: 'var(--font-size-sm)',
               }}
             >
-              <div style={{ fontSize: 40, marginBottom: 'var(--space-3)' }}>🔔</div>
+              <div style={{ marginBottom: 'var(--space-3)', opacity: 0.4 }}><Icon icon={Bell} size={40} /></div>
               You&rsquo;re all caught up!
             </div>
           )}

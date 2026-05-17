@@ -1,22 +1,25 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import type { LucideIcon } from 'lucide-react';
 import { Tooltip } from '../../shared/components/Tooltip';
 import { Badge } from '../../shared/components/Badge';
+import { Icon } from '../../shared/components/Icon';
+import { MessageSquare, Newspaper, Clapperboard, ShoppingBag } from '../../shared/components/iconRegistry';
 import { useUIStore, type Domain } from '../stores/uiStore';
 import { useIsMobile } from '../../shared/hooks/useIsMobile';
 
 interface NavItem {
   domain: Domain;
   label: string;
-  emoji: string;
+  icon: LucideIcon;
   path: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { domain: 'communication', label: 'Communication', emoji: '💬', path: '/communication' },
-  { domain: 'social', label: 'Social', emoji: '📰', path: '/social' },
-  { domain: 'streaming', label: 'Streaming', emoji: '🎬', path: '/streaming' },
-  { domain: 'commerce', label: 'Shop', emoji: '🛒', path: '/commerce' },
+  { domain: 'communication', label: 'Communication', icon: MessageSquare, path: '/communication' },
+  { domain: 'social',         label: 'Social',         icon: Newspaper,     path: '/social' },
+  { domain: 'streaming',      label: 'Streaming',      icon: Clapperboard,  path: '/streaming' },
+  { domain: 'commerce',       label: 'Shop',           icon: ShoppingBag,   path: '/commerce' },
 ];
 
 export const DomainNavRail: React.FC = () => {
@@ -94,7 +97,7 @@ export const DomainNavRail: React.FC = () => {
                   }}
                 />
               )}
-              {item.emoji}
+              <Icon icon={item.icon} size={20} />
 
               {unread > 0 && (
                 <Badge

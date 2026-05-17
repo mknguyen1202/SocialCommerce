@@ -3,6 +3,8 @@ import { Outlet, NavLink } from 'react-router-dom';
 import { useMyGroups } from './hooks/useGroups';
 import { useSocialStore } from './stores/socialStore';
 import { Button } from '../../shared/components/Button';
+import { Icon } from '../../shared/components/Icon';
+import { Home, Compass, Globe2 } from '../../shared/components/iconRegistry';
 import { useIsMobile } from '../../shared/hooks/useIsMobile';
 
 const PostEditor = lazy(() => import('./Post/PostEditor').then(m => ({ default: m.PostEditor })));
@@ -185,9 +187,9 @@ export const SocialLayout: React.FC = () => {
 				{/* Mobile sub-nav strip — only visible on xs/sm */}
 				{isMobile && (
 					<nav aria-label="Social navigation" className="mobile-sub-nav">
-						<NavLink to="/social" end style={mobileNavItemStyle}>🏠 Home</NavLink>
-						<NavLink to="/social/explore" style={mobileNavItemStyle}>🔭 Explore</NavLink>
-						<NavLink to="/social/groups/discover" style={mobileNavItemStyle}>🌐 Communities</NavLink>
+				<NavLink to="/social" end style={mobileNavItemStyle}><Icon icon={Home} size={14} /> Home</NavLink>
+					<NavLink to="/social/explore" style={mobileNavItemStyle}><Icon icon={Compass} size={14} /> Explore</NavLink>
+					<NavLink to="/social/groups/discover" style={mobileNavItemStyle}><Icon icon={Globe2} size={14} /> Communities</NavLink>
 						<button
 							onClick={() => openEditor()}
 							style={{

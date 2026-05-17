@@ -1,25 +1,32 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import type { LucideIcon } from 'lucide-react';
 import { Avatar } from '../../shared/components/Avatar';
 import { Badge } from '../../shared/components/Badge';
+import { Icon } from '../../shared/components/Icon';
+import {
+    MessageSquare, Newspaper, Clapperboard, ShoppingBag,
+    Sun, Moon, LogOut, X, User, Settings,
+} from '../../shared/components/iconRegistry';
 import { useUIStore, type Domain } from '../stores/uiStore';
 import { useAuthContext } from '../providers/AuthProvider';
 
 interface NavItem {
     domain: Domain;
     label: string;
-    emoji: string;
+    icon: LucideIcon;
     path: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-    { domain: 'communication', label: 'Communication', emoji: '💬', path: '/communication' },
-    { domain: 'social', label: 'Social', emoji: '📰', path: '/social' },
-    { domain: 'streaming', label: 'Streaming', emoji: '🎬', path: '/streaming' },
-    { domain: 'commerce', label: 'Shop', emoji: '🛒', path: '/commerce' },
+    { domain: 'communication', label: 'Communication', icon: MessageSquare, path: '/communication' },
+    { domain: 'social',         label: 'Social',         icon: Newspaper,     path: '/social' },
+    { domain: 'streaming',      label: 'Streaming',      icon: Clapperboard,  path: '/streaming' },
+    { domain: 'commerce',       label: 'Shop',           icon: ShoppingBag,   path: '/commerce' },
 ];
 
 export const NavDrawer: React.FC = () => {
+    const navigate = useNavigate();
     const {
         isNavDrawerOpen,
         closeNavDrawer,
@@ -32,12 +39,6 @@ export const NavDrawer: React.FC = () => {
     const { user, logout } = useAuthContext();
 
     const displayName = user?.name ?? user?.email ?? 'User';
-    const initials = displayName
-        .split(' ')
-        .map((w) => w[0] ?? '')
-        .slice(0, 2)
-        .join('')
-        .toUpperCase();
 
     if (!isNavDrawerOpen) return null;
 
@@ -85,7 +86,7 @@ export const NavDrawer: React.FC = () => {
                         borderBottom: '1px solid var(--color-border-default)',
                     }}
                 >
-                    <Avatar initials={initials} size="md" />
+                    <Avatar src={user?.avatarUrl} name={displayName} size="md" />
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <p
                             style={{
@@ -123,13 +124,15 @@ export const NavDrawer: React.FC = () => {
                             border: 'none',
                             color: 'var(--color-text-secondary)',
                             cursor: 'pointer',
-                            fontSize: 18,
                             padding: 4,
                             borderRadius: 'var(--radius-sm)',
                             flexShrink: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                         }}
                     >
-                        ✕
+                        <Icon icon={X} size={18} />
                     </button>
                 </div>
 
@@ -148,7 +151,7 @@ export const NavDrawer: React.FC = () => {
                                     setActiveDomain(item.domain);
                                     closeNavDrawer();
                                 }}
-                                style={{
+                            style={{
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 'var(--space-3)',
@@ -164,7 +167,7 @@ export const NavDrawer: React.FC = () => {
                                     transition: 'background var(--transition-fast)',
                                 }}
                             >
-                                <span style={{ fontSize: 20 }}>{item.emoji}</span>
+                                <Icon icon={item.icon} size={18} />
                                 <span style={{ flex: 1 }}>{item.label}</span>
                                 {unread > 0 && <Badge count={unread} />}
                             </NavLink>
@@ -177,42 +180,56 @@ export const NavDrawer: React.FC = () => {
 
                 {/* Footer actions */}
                 <div style={{ borderTop: '1px solid var(--color-border-default)', padding: 'var(--space-2) 0' }}>
+                    {/* Profile */}
+                    <button
+                        onClick={() => { navigate('/profile'); closeNavDrawer(); }}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                            width: '100%', padding: 'var(--space-3) var(--space-4)',
+                            background: 'none', border: 'none', color: 'var(--color-text-secondary)',
+                            cursor: 'pointer', fontSize: 'var(--font-size-base)', textAlign: 'left',
+                        }}
+                    >
+                        <Icon icon={User} size={18} />
+                        <span>My Profile</span>
+                    </button>
+                    {/* Settings */}
+                    <button
+                        onClick={() => { navigate('/settings'); closeNavDrawer(); }}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                            width: '100%', padding: 'var(--space-3) var(--space-4)',
+                            background: 'none', border: 'none', color: 'var(--color-text-secondary)',
+                            cursor: 'pointer', fontSize: 'var(--font-size-base)', textAlign: 'left',
+                        }}
+                    >
+                        <Icon icon={Settings} size={18} />
+                        <span>Settings</span>
+                    </button>
+                    {/* Theme toggle */}
                     <button
                         onClick={toggleTheme}
                         style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 'var(--space-3)',
-                            width: '100%',
-                            padding: 'var(--space-3) var(--space-4)',
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--color-text-secondary)',
-                            cursor: 'pointer',
-                            fontSize: 'var(--font-size-base)',
-                            textAlign: 'left',
+                            display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                            width: '100%', padding: 'var(--space-3) var(--space-4)',
+                            background: 'none', border: 'none', color: 'var(--color-text-secondary)',
+                            cursor: 'pointer', fontSize: 'var(--font-size-base)', textAlign: 'left',
                         }}
                     >
-                        <span style={{ fontSize: 20 }}>{theme === 'dark' ? '☀️' : '🌙'}</span>
+                        <Icon icon={theme === 'dark' ? Sun : Moon} size={18} />
                         <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
                     </button>
+                    {/* Sign out */}
                     <button
                         onClick={() => { void logout(); closeNavDrawer(); }}
                         style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 'var(--space-3)',
-                            width: '100%',
-                            padding: 'var(--space-3) var(--space-4)',
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--color-danger)',
-                            cursor: 'pointer',
-                            fontSize: 'var(--font-size-base)',
-                            textAlign: 'left',
+                            display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                            width: '100%', padding: 'var(--space-3) var(--space-4)',
+                            background: 'none', border: 'none', color: 'var(--color-danger)',
+                            cursor: 'pointer', fontSize: 'var(--font-size-base)', textAlign: 'left',
                         }}
                     >
-                        <span style={{ fontSize: 20 }}>🚪</span>
+                        <Icon icon={LogOut} size={18} />
                         <span>Sign out</span>
                     </button>
                 </div>

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import type { Theater, PlaybackState } from '../../../shared/types/domain';
 
 interface TheaterPlayerProps {
@@ -15,7 +15,15 @@ export const TheaterPlayer: React.FC<TheaterPlayerProps> = ({
   onSeek,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
 
+  // Viewer auto-start: rely on the `autoPlay` HTML attribute rather than
+  // calling video.play() imperatively. The browser defers playback until
+  // enough data is buffered, so this is far more reliable than a useEffect.
+  // The `muted` attribute satisfies the browser's autoplay policy.
+  const viewerAutoPlay = !isHost && theater.status === 'live';
+
+  // Sync-to-server playback position/state (received via WebSocket).
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !playback || isHost) return;
@@ -27,6 +35,11 @@ export const TheaterPlayer: React.FC<TheaterPlayerProps> = ({
       video.pause();
     }
   }, [playback, isHost]);
+
+  // Keep the video element's muted property in sync with our state.
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.muted = isMuted;
+  }, [isMuted]);
 
   const isEnded = theater.status === 'ended';
   const isCreated = theater.status === 'created';
@@ -67,18 +80,48 @@ export const TheaterPlayer: React.FC<TheaterPlayerProps> = ({
   return (
     <div style={{ width: '100%', aspectRatio: '16/9', background: '#000', position: 'relative' }}>
       {src ? (
-        <video
-          ref={videoRef}
-          src={src}
-          controls={isHost}
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-          onSeeked={() => {
-            if (isHost && videoRef.current && onSeek) {
-              onSeek(videoRef.current.currentTime);
-            }
-          }}
-          aria-label={theater.title}
-        />
+        <>
+          <video
+            ref={videoRef}
+            src={src}
+            muted={isMuted}
+            autoPlay={viewerAutoPlay}
+            playsInline
+            controls={isHost}
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            onSeeked={() => {
+              if (isHost && videoRef.current && onSeek) {
+                onSeek(videoRef.current.currentTime);
+              }
+            }}
+            aria-label={theater.title}
+          />
+          {/* Unmute button — shown to viewers when audio is muted and theater is live */}
+          {!isHost && isMuted && theater.status === 'live' && (
+            <button
+              onClick={() => setIsMuted(false)}
+              aria-label="Unmute"
+              style={{
+                position: 'absolute',
+                bottom: 'var(--space-3)',
+                left: 'var(--space-3)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-2)',
+                padding: '6px 12px',
+                background: 'rgba(0,0,0,0.7)',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.3)',
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer',
+                fontSize: 'var(--font-size-sm)',
+                backdropFilter: 'blur(4px)',
+              }}
+            >
+              🔇 Tap to unmute
+            </button>
+          )}
+        </>
       ) : (
         <div
           style={{

@@ -29,8 +29,11 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "StreamingService", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Name = "Authorization", Type = SecuritySchemeType.Http,
-        Scheme = "bearer", BearerFormat = "JWT", In = ParameterLocation.Header
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -61,4 +64,4 @@ app.MapGet("/health/live", () => Results.Ok()).WithTags("Health");
 
 app.Run();
 
-internal partial class Program { }
+public partial class Program { }

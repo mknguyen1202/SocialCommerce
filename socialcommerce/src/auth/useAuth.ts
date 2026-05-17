@@ -180,7 +180,7 @@ export function useAuth() {
         async (email: string, _password: string) => {
             // Mock implementation — resolves immediately with a local user, no backend call.
             const name = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-            setUser({ id: 'mock-email', name, email, roles: [], permissions: [] });
+            setUser({ id: 'mock-email', name, email, roles: [], permissions: [], avatarUrl: null, bio: null });
         },
         []
     );

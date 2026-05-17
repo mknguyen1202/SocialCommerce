@@ -159,26 +159,43 @@ export const communicationHandlers = [
             const { emoji } = (await request.json()) as { emoji: string };
             const me = u('usr-1');
             const convId = params.conversationId as string;
+            type ReactionRow = { emoji: string; user_ids: string[]; count: number };
             messages = {
                 ...messages,
                 [convId]: (messages[convId] ?? []).map((m) => {
                     if (m.id !== params.messageId) return m;
-                    const existing = (m.reactions as Array<{ emoji: string; user_ids: string[]; count: number }>)
-                        .find((r) => r.emoji === emoji);
+                    const reactions = m.reactions as ReactionRow[];
+                    const existing = reactions.find((r) => r.emoji === emoji);
                     if (existing) {
+                        const alreadyReacted = existing.user_ids.includes(me.id);
+                        if (alreadyReacted) {
+                            // Toggle off
+                            const newUserIds = existing.user_ids.filter((id: string) => id !== me.id);
+                            return {
+                                ...m,
+                                reactions: newUserIds.length === 0
+                                    ? reactions.filter((r) => r.emoji !== emoji)
+                                    : reactions.map((r) =>
+                                        r.emoji === emoji
+                                            ? { ...r, user_ids: newUserIds, count: newUserIds.length }
+                                            : r
+                                    ),
+                            };
+                        }
+                        // Toggle on — add to existing bucket
                         return {
                             ...m,
-                            reactions: (m.reactions as Array<{ emoji: string; user_ids: string[]; count: number }>)
-                                .map((r) =>
-                                    r.emoji === emoji
-                                        ? { ...r, user_ids: [...r.user_ids, me.id], count: r.count + 1 }
-                                        : r,
-                                ),
+                            reactions: reactions.map((r) =>
+                                r.emoji === emoji
+                                    ? { ...r, user_ids: [...r.user_ids, me.id], count: r.count + 1 }
+                                    : r
+                            ),
                         };
                     }
+                    // New emoji
                     return {
                         ...m,
-                        reactions: [...(m.reactions as unknown[]), { emoji, user_ids: [me.id], count: 1 }],
+                        reactions: [...reactions, { emoji, user_ids: [me.id], count: 1 }],
                     };
                 }),
             };
